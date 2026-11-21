@@ -15,8 +15,8 @@ being established.
 
 ![AERIE code audit treemap](docs/windows-port-audit.svg)
 
-*Audit of the current prototype — 63 findings: **35 fixed (56%)**, no blockers,
-6 major, 18 minor. Section percentages show how much of each area is fixed.
+*Audit of the current prototype — 63 findings: **38 fixed (60%)**, no blockers,
+3 major, 18 minor. Section percentages show how much of each area is fixed.
 Tiles are coloured by severity and sized by impact; the full map is
 [docs/windows-port-audit.svg](docs/windows-port-audit.svg).*
 
@@ -31,16 +31,15 @@ Tiles are coloured by severity and sized by impact; the full map is
 
 ## Known issues
 
-The audit found 63 issues; **35 are fixed (56%) and no blockers remain.**
+The audit found 63 issues; **38 are fixed (60%) and no blockers remain.**
 
 The largest remaining items:
 
 - **Memory** — one WebView2 per tab, and a process set per fresh space.
-- **History** — no URL identity or fragment dedupe, and frecency still diverges.
-- **Typo tolerance** — the tab switcher's matcher is not the Mac app's.
 - **Store** — a corrupt file is silently replaced instead of quarantined.
 - **WebKit** — find, print, picture-in-picture and passwords remain stubs.
 - **UI tests** — CI still has none.
+- **Packaging** — the WebKit bundle lacks the LGPL license texts.
 
 Fixed in this batch, each verified against the running build:
 
@@ -75,6 +74,9 @@ Fixed in this batch, each verified against the running build:
   site and are remembered; private tabs ask every time, and Settings can forget.
 - **Downloads** — a Save dialog per download and a completion toast.
 - **Space deletion** — a fresh space's profile and cookies are deleted with it.
+- **History** — URL identity dedupes fragments and strips credentials; ranking
+  is match quality × log(2 + frecency); one letter finishes a front door; a
+  typo within one edit still finds the page.
 - **Lifecycle** — page-init failures are visible, links arriving during startup
   are queued, and DevTools are off in release unless enabled in settings.
 - **Accessibility** — every button, tab, pin and toggle is now Tab-reachable,

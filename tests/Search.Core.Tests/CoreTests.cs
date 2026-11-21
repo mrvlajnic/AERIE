@@ -308,14 +308,61 @@ public class HistoryTests
     static readonly DateTime Now = new(2026, 11, 1);
 
     [Fact]
-    public void FinishesHosts()
+    public void FinishesAddresses()
     {
         var h = new History();
         h.Record("https://github.com/x/y", "Y", Now);
         h.Record("https://www.gitlab.com/", "GL", Now.AddDays(-30));
-        Assert.Equal("hub.com", h.Complete("git", Now));
-        Assert.Equal("x", h.Complete("github.com/", Now));
+        Assert.Equal("hub.com/x/y", h.Complete("git", Now));
+        Assert.Equal("x/y", h.Complete("github.com/", Now));
         Assert.Null(h.Complete("zzz", Now));
+    }
+
+    [Fact]
+    public void CompletesAFrontDoorFromOneLetter()
+    {
+        var h = new History();
+        h.Record("https://example.com/", "Example", Now);
+        Assert.Equal("xample.com", h.Complete("e", Now));
+        Assert.Equal("mple.com", h.Complete("exa", Now));
+    }
+
+    [Fact]
+    public void IdentityDedupesFragmentsAndDropsCredentials()
+    {
+        Assert.Equal("https://example.com/a?b=1", History.Identity("HTTPS://user:pass@Example.com/a?b=1#top"));
+        var h = new History();
+        h.Record("https://x.com/#a", "A", Now);
+        h.Record("https://x.com/#b", "B", Now);
+        h.Record("https://x.com", "C", Now);
+        Assert.Single(h.Visits);
+        Assert.Equal("https://x.com/", h.Visits[0].Url);
+        Assert.Equal(3, h.Visits[0].Count);
+    }
+
+    [Fact]
+    public void AddressPrefixBeatsATitleMatch()
+    {
+        var h = new History();
+        h.Record("https://news.example/", "Important quarterly report", Now);
+        h.Record("https://example.com/", "Example", Now);
+        Assert.Equal("https://example.com/", h.Suggest("example", 5, Now)[0].Url);
+    }
+
+    [Fact]
+    public void MatchesEveryWordAnywhere()
+    {
+        var h = new History();
+        h.Record("https://a.example/", "Hello there, world", Now);
+        Assert.Single(h.Suggest("hello world", 5, Now));
+    }
+
+    [Fact]
+    public void FindsATypoWhenRoomIsLeft()
+    {
+        var h = new History();
+        h.Record("https://github.com/", "GitHub", Now);
+        Assert.Single(h.Suggest("githb", 5, Now));
     }
 
     [Fact]
