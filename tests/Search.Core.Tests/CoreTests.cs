@@ -425,8 +425,26 @@ public class StoreTests
             Assert.Equal("https://e.com/", back.Spaces[0].Tabs[0].Url);
             File.WriteAllText(Path.Combine(Store.Folder, "settings.json"), "{ not json");
             Assert.True(Store.Load<Settings>("settings.json").ShieldOn);
+            // The damaged file is kept aside, not overwritten by defaults.
+            var kept = Directory.GetFiles(Store.Folder, "settings.json.unreadable-*");
+            Assert.Single(kept);
+            Assert.Contains("not json", File.ReadAllText(kept[0]));
         }
         finally { Directory.Delete(Store.Folder, true); Store.Folder = old; }
+    }
+
+    [Fact]
+    public void ReadsAnyCasing()
+    {
+        var old = Store.Folder;
+        Store.Folder = Path.Combine(Path.GetTempPath(), "storecase-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            Directory.CreateDirectory(Store.Folder);
+            File.WriteAllText(Path.Combine(Store.Folder, "settings.json"), "{\"ShieldOn\":false}");
+            Assert.False(Store.Load<Settings>("settings.json").ShieldOn);
+        }
+        finally { try { Directory.Delete(Store.Folder, true); } catch { } Store.Folder = old; }
     }
 
     [Fact]

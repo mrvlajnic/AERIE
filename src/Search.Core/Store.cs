@@ -15,17 +15,46 @@ public static class Store
         WriteIndented = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
+        // Hand-edited or older files may use any casing.
+        PropertyNameCaseInsensitive = true,
     };
+
+    /// The last damaged file kept aside, for anyone who wants to look at it.
+    public static string? LastQuarantine { get; private set; }
 
     public static T Load<T>(string name) where T : new()
     {
+        var path = Path.Combine(Folder, name);
+        if (!File.Exists(path)) return new T();
         try
         {
-            var path = Path.Combine(Folder, name);
-            if (File.Exists(path)) return JsonSerializer.Deserialize<T>(File.ReadAllText(path), Options) ?? new T();
+            var text = File.ReadAllText(path);
+            return JsonSerializer.Deserialize<T>(text, Options) ?? new T();
         }
-        catch { /* a damaged file starts over rather than stopping the app */ }
-        return new T();
+        catch
+        {
+            // A damaged file is kept, not overwritten by defaults on the next
+            // save: the history or session in it may still be recoverable.
+            Quarantine(path);
+            return new T();
+        }
+    }
+
+    static void Quarantine(string path)
+    {
+        try
+        {
+            var kept = path + ".unreadable-" + DateTime.Now.ToString("yyyyMMdd-HHmmss") + "-" + Guid.NewGuid().ToString("N")[..4];
+            File.Move(path, kept);
+            LastQuarantine = kept;
+            try
+            {
+                File.AppendAllText(Path.Combine(Path.GetDirectoryName(path)!, "errors.log"),
+                    $"{DateTime.Now:u} store: {Path.GetFileName(path)} was unreadable; kept as {Path.GetFileName(kept)}\n");
+            }
+            catch { }
+        }
+        catch { /* an unreadable or locked file is left where it is */ }
     }
 
     /// Written beside and moved into place, so a crash mid-write never leaves half a file.
@@ -62,9 +91,17 @@ public static class Store
     {
         Directory.CreateDirectory(folder);
         var path = Path.Combine(folder, name);
-        var temp = path + ".tmp";
-        File.WriteAllText(temp, JsonSerializer.Serialize(value, Options));
-        File.Move(temp, path, true);
+        // Unique per write: two saves (or two windows) must not share a temp.
+        var temp = path + "." + Guid.NewGuid().ToString("N")[..8] + ".tmp";
+        try
+        {
+            File.WriteAllText(temp, JsonSerializer.Serialize(value, Options));
+            File.Move(temp, path, true);
+        }
+        finally
+        {
+            try { if (File.Exists(temp)) File.Delete(temp); } catch { }
+        }
     }
 }
 
