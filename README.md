@@ -15,8 +15,8 @@ being established.
 
 ![AERIE code audit treemap](docs/windows-port-audit.svg)
 
-*Audit of the current prototype — 63 findings: **48 fixed (76%)**, no blockers,
-no majors, 11 minor. Section percentages show how much of each area is fixed.
+*Audit of the current prototype — 63 findings: **51 fixed (81%)**, no blockers,
+no majors, 8 minor. Section percentages show how much of each area is fixed.
 Tiles are coloured by severity and sized by impact; the full map is
 [docs/windows-port-audit.svg](docs/windows-port-audit.svg).*
 
@@ -31,7 +31,7 @@ Tiles are coloured by severity and sized by impact; the full map is
 
 ## Known issues
 
-The audit found 63 issues; **48 are fixed (76%), with no blockers and no majors
+The audit found 63 issues; **51 are fixed (81%), with no blockers and no majors
 left.**
 
 The largest remaining items:
@@ -85,6 +85,11 @@ Fixed in this batch, each verified against the running build:
   settings.json), least-recently-used first, and Windows' low-memory signal
   sleeps three more. Per-tab controllers remain, but what stays resident is
   bounded instead of growing with the tab count.
+- **Isolation** — Chromium's `--process-per-site` is **off by default**; it
+  shares one renderer between same-site pages, which saves memory but weakens
+  the walls between them. The Settings toggle (`processPerSite`) opts in.
+- **Pop-ups** — a window a page opens without a click is refused and reported;
+  a clicked one becomes a tab.
 - **Storage** — a damaged JSON file is moved aside as
   `*.unreadable-<time>-<id>` (and logged) instead of being overwritten; reads
   accept any property casing, and every write uses a unique temp file.

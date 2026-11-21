@@ -30,9 +30,15 @@ sealed class WebView2Engine : IEngine
         get { try { return CoreWebView2Environment.GetAvailableBrowserVersionString(); } catch { return null; } }
     }
 
-    /// Chromium's switches for using less memory: same-site tabs share one
-    /// page process; lean mode shrinks caches as on a low-memory device.
-    public static string Arguments(bool lean) => "--process-per-site" + (lean ? " --enable-low-end-device-mode" : "");
+    /// Chromium's memory switches. Site isolation is the default; sharing one
+    /// renderer between same-site pages is opt-in (less memory, weaker walls).
+    public static string Arguments(bool lean, bool perSite)
+    {
+        var args = new List<string>();
+        if (perSite) args.Add("--process-per-site");
+        if (lean) args.Add("--enable-low-end-device-mode");
+        return string.Join(" ", args);
+    }
 
     public async Task Start(BrowserWindow browser)
     {
@@ -40,7 +46,7 @@ sealed class WebView2Engine : IEngine
         var options = new CoreWebView2EnvironmentOptions
         {
             AreBrowserExtensionsEnabled = true,
-            AdditionalBrowserArguments = Arguments(browser.Settings.Lean),
+            AdditionalBrowserArguments = Arguments(browser.Settings.Lean, browser.Settings.ProcessPerSite),
         };
         Env = await CoreWebView2Environment.CreateAsync(null, Path.Combine(Store.Folder, "Web"), options);
     }
@@ -304,6 +310,13 @@ sealed class WebView2Page : IPage
 
     async void OnNewWindow(object? sender, CoreWebView2NewWindowRequestedEventArgs e)
     {
+        // A window a page opens without a click is refused, as on the Mac.
+        if (!e.IsUserInitiated)
+        {
+            e.Handled = true;
+            engine.Browser.Toast("Pop-up blocked — open it from the page's link");
+            return;
+        }
         // The new tab keeps its tie to the page that opened it: sign-in windows need it.
         var deferral = e.GetDeferral();
         e.Handled = true;

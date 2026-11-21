@@ -168,6 +168,7 @@ sealed class SettingsWindow : Plain
             S.SleepMinutes.ToString(), v => { S.SleepMinutes = int.Parse(v); browser.ApplySettings(); });
         Add(SiteCard.Toggle("Lean engine — smaller caches, as on a low-memory PC (after a restart)", S.Lean, true, on => { S.Lean = on; browser.ApplySettings(); }));
         Note("Lean mode can make some gradients look slightly banded. Turn it off if a site looks wrong.");
+        Add(SiteCard.Toggle("Share one process between pages of the same site — less memory, weaker isolation (after a restart)", S.ProcessPerSite, true, on => { S.ProcessPerSite = on; browser.ApplySettings(); }));
 
         if (WebKit.Available)
         {
