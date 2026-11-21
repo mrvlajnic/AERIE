@@ -527,7 +527,7 @@ sealed class ExtensionsMenu : Sheet
         var p = new StackPanel { Margin = new Thickness(8) };
         p.Children.Add(Caption("Extensions"));
         var here = Browser.Current?.Url ?? "";
-        if (Crx.IdFrom(here) != null && !here.EndsWith("chromewebstore.google.com/"))
+        if (Browser.Engine.Extensions.Enabled && Crx.IdFrom(here) != null && !here.EndsWith("chromewebstore.google.com/"))
         {
             var add = Ui.Pill("Add This Extension to Search", async () =>
             {
@@ -541,7 +541,7 @@ sealed class ExtensionsMenu : Sheet
         }
         var all = Browser.Engine.Extensions.All;
         if (all.Count == 0)
-            p.Children.Add(Switcher.Nothing("None yet. Open an extension's page in the Chrome Web Store and come back here, or add one in Settings."));
+            p.Children.Add(Switcher.Nothing(Browser.Engine.Extensions.About));
         foreach (var ext in all)
         {
             var e = ext;

@@ -383,7 +383,8 @@ sealed class WebView2Extensions : IExtensionHost
         var version = engine.Version?.Split(' ')[0] ?? "130.0.0.0";
         var bytes = await http.GetByteArrayAsync(Crx.DownloadUrl(id, version));
         var folder = Path.Combine(Store.Folder, "Extensions", id);
-        await Task.Run(() => Crx.Unpack(bytes, folder));
+        // Verify the CRX3 signature and id before anything is written.
+        await Task.Run(() => Crx.Install(bytes, folder, id));
         return await AddFolder(folder, id);
     }
 

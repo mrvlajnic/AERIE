@@ -242,29 +242,32 @@ sealed class SettingsWindow : Plain
             row.Children.Add(words);
             Add(row);
         }
-        var link = Ui.Field("", 13);
-        var linkRow = new DockPanel { Margin = new Thickness(0, 6, 0, 0) };
-        var addButton = Ui.Pill("Add", async () =>
+        if (extensionHost.Enabled)
         {
-            try { var n = await extensionHost.InstallFromStore(link.Text); browser.Toast("Added " + n); Draw(); }
-            catch (Exception ex) { MessageBox.Show(this, ex.Message, "Search"); }
-        }, filled: true);
-        addButton.Margin = new Thickness(8, 6, 0, 0);
-        DockPanel.SetDock(addButton, Dock.Right);
-        linkRow.Children.Add(addButton);
-        linkRow.Children.Add(new Border
-        {
-            Child = Ui.Placeheld(link, "https://chromewebstore.google.com/detail/…"), BorderBrush = Theme.Faint, BorderThickness = new Thickness(1),
-            CornerRadius = new CornerRadius(6), Padding = new Thickness(6, 2, 6, 2), Margin = new Thickness(0, 6, 0, 0),
-        });
-        Add(linkRow);
-        Buttons(("Load Unpacked…", async () =>
-        {
-            var pick = new Microsoft.Win32.OpenFolderDialog { Title = "The extension's folder (with manifest.json)" };
-            if (pick.ShowDialog(this) != true) return;
-            try { var n = await extensionHost.AddFolder(pick.FolderName); browser.Toast("Added " + n); Draw(); }
-            catch (Exception ex) { MessageBox.Show(this, ex.Message, "Search"); }
-        }));
+            var link = Ui.Field("", 13);
+            var linkRow = new DockPanel { Margin = new Thickness(0, 6, 0, 0) };
+            var addButton = Ui.Pill("Add", async () =>
+            {
+                try { var n = await extensionHost.InstallFromStore(link.Text); browser.Toast("Added " + n); Draw(); }
+                catch (Exception ex) { MessageBox.Show(this, ex.Message, "Search"); }
+            }, filled: true);
+            addButton.Margin = new Thickness(8, 6, 0, 0);
+            DockPanel.SetDock(addButton, Dock.Right);
+            linkRow.Children.Add(addButton);
+            linkRow.Children.Add(new Border
+            {
+                Child = Ui.Placeheld(link, "https://chromewebstore.google.com/detail/…"), BorderBrush = Theme.Faint, BorderThickness = new Thickness(1),
+                CornerRadius = new CornerRadius(6), Padding = new Thickness(6, 2, 6, 2), Margin = new Thickness(0, 6, 0, 0),
+            });
+            Add(linkRow);
+            Buttons(("Load Unpacked…", async () =>
+            {
+                var pick = new Microsoft.Win32.OpenFolderDialog { Title = "The extension's folder (with manifest.json)" };
+                if (pick.ShowDialog(this) != true) return;
+                try { var n = await extensionHost.AddFolder(pick.FolderName); browser.Toast("Added " + n); Draw(); }
+                catch (Exception ex) { MessageBox.Show(this, ex.Message, "Search"); }
+            }));
+        }
 
         Section("This PC");
         bool isDefault = DefaultBrowser.IsDefault();

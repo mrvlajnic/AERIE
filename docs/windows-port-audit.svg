@@ -5,17 +5,17 @@
 <rect x="18" y="72" width="203" height="22" rx="4" fill="#2e7d32"/>
 <text x="119" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">build: 0 warnings / 0 errors</text>
 <rect x="227.8" y="72" width="97" height="22" rx="4" fill="#2e7d32"/>
-<text x="276" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">tests: 92/92</text>
+<text x="276" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">tests: 96/96</text>
 <rect x="332.0" y="72" width="84" height="22" rx="4" fill="#2e7d32"/>
 <text x="374" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">launch: OK</text>
-<rect x="423.0" y="72" width="91" height="22" rx="4" fill="#c62828"/>
-<text x="468" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">blockers: 2</text>
+<rect x="423.0" y="72" width="91" height="22" rx="4" fill="#2e7d32"/>
+<text x="468" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">blockers: 0</text>
 <rect x="520.6" y="72" width="77" height="22" rx="4" fill="#e08a1e"/>
 <text x="559" y="87" font-size="12" font-weight="bold" fill="#241100" text-anchor="middle">major: 15</text>
 <rect x="605.0" y="72" width="77" height="22" rx="4" fill="#d9b40a"/>
 <text x="644" y="87" font-size="12" font-weight="bold" fill="#241f00" text-anchor="middle">minor: 19</text>
 <rect x="689.4" y="72" width="137" height="22" rx="4" fill="#1b5e20"/>
-<text x="758" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">fixed: 23/63 (37%)</text>
+<text x="758" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">fixed: 25/63 (40%)</text>
 <text x="18" y="110" font-size="11.5" fill="#333"><tspan font-weight="bold" fill="#777">EVIDENCE  </tspan>30 CultureNotFoundExceptions in errors.log → InvariantGlobalization removed → typed example.com, page loaded, session + history written, no errors.</text>
 <rect x="18" y="126" width="13" height="13" rx="3" fill="#c62828" stroke="#666" stroke-width="0.4"/>
 <text x="36" y="136" font-size="11" fill="#444">blocker</text>
@@ -61,10 +61,10 @@
 <text x="1153.2" y="289.9" font-size="12.0" fill="#ffffff" text-anchor="middle">H-wheel (fixed)</text>
 <text x="18" y="364.8222976870845" font-size="15.5" font-weight="bold" fill="#111">Core logic (Search.Core)</text>
 <text x="241" y="363.8222976870845" font-size="11.5" fill="#777">address, history, shielding, storage</text>
-<text x="1222" y="363.8222976870845" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">25% fixed (3/12) · 1 blocker · 5 major · 2 minor · 1 info</text>
+<text x="1222" y="363.8222976870845" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">33% fixed (4/12) · 5 major · 2 minor · 1 info</text>
 <rect x="18" y="373.8222976870845" width="1204" height="135" fill="#efefef"/>
-<rect x="18.5" y="374.3" width="189.5" height="134.0" fill="#c62828" stroke="#ffffff" stroke-width="1"/>
-<text x="113.3" y="445.4" font-size="12.0" fill="#ffffff" text-anchor="middle">CRX3 unverified</text>
+<rect x="18.5" y="374.3" width="189.5" height="134.0" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="113.3" y="445.4" font-size="12.0" fill="#ffffff" text-anchor="middle">CRX3 verified (fixed)</text>
 <rect x="209.0" y="374.3" width="113.3" height="134.0" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
 <text x="265.7" y="443.9" font-size="7.6" fill="#241100" text-anchor="middle">History: no URL identity</text>
 <rect x="323.3" y="374.3" width="113.3" height="134.0" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
@@ -107,10 +107,10 @@
 <text x="1151.2" y="609.8" font-size="8.8" fill="#241f00" text-anchor="middle">process-per-site isolation</text>
 <text x="18" y="695.7290658226464" font-size="15.5" font-weight="bold" fill="#111">WebKit engine &amp; extensions</text>
 <text x="259" y="694.7290658226464" font-size="11.5" fill="#777">the optional engine and its runtime</text>
-<text x="1222" y="694.7290658226464" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">17% fixed (1/6) · 1 blocker · 1 major · 3 minor</text>
+<text x="1222" y="694.7290658226464" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">33% fixed (2/6) · 1 major · 3 minor</text>
 <rect x="18" y="704.7290658226464" width="1204" height="98" fill="#efefef"/>
-<rect x="18.5" y="705.2" width="315.8" height="97.5" fill="#c62828" stroke="#ffffff" stroke-width="1"/>
-<text x="176.4" y="758.0" font-size="12.0" fill="#ffffff" text-anchor="middle">Any page fakes an extension</text>
+<rect x="18.5" y="705.2" width="315.8" height="97.5" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="176.4" y="758.0" font-size="12.0" fill="#ffffff" text-anchor="middle">WebKit extensions off (fixed)</text>
 <rect x="335.3" y="705.2" width="315.8" height="97.5" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
 <text x="493.3" y="758.0" font-size="12.0" fill="#ffffff" text-anchor="middle">Callbacks marshalled (fixed)</text>
 <rect x="652.2" y="705.2" width="189.1" height="97.5" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
@@ -191,20 +191,20 @@
 <text x="208" y="1398.0427033095116" font-size="11.5" fill="#777">by user impact — not severity</text>
 <rect x="18" y="1408.0427033095116" width="1204" height="90" fill="#ececec"/>
 <rect x="18.5" y="1408.5" width="149.5" height="89.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="93.2" y="1456.4" font-size="10.0" fill="#ffffff" text-anchor="middle">1. WebKit extension trust</text>
+<text x="93.2" y="1457.1" font-size="12.0" fill="#ffffff" text-anchor="middle">1. Incremental render</text>
 <rect x="169.0" y="1408.5" width="149.5" height="89.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="243.8" y="1457.1" font-size="12.0" fill="#ffffff" text-anchor="middle">2. CRX3 verification</text>
+<text x="243.8" y="1456.0" font-size="8.8" fill="#ffffff" text-anchor="middle">2. History off the UI thread</text>
 <rect x="319.5" y="1408.5" width="149.5" height="89.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="394.2" y="1457.1" font-size="12.0" fill="#ffffff" text-anchor="middle">3. Incremental render</text>
+<text x="394.2" y="1457.1" font-size="12.0" fill="#ffffff" text-anchor="middle">3. ShowSelected diff</text>
 <rect x="470.0" y="1408.5" width="149.5" height="89.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="544.8" y="1456.0" font-size="8.8" fill="#ffffff" text-anchor="middle">4. History off the UI thread</text>
+<text x="544.8" y="1456.4" font-size="10.0" fill="#ffffff" text-anchor="middle">4. Job objects + profiles</text>
 <rect x="620.5" y="1408.5" width="149.5" height="89.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="695.2" y="1457.1" font-size="12.0" fill="#ffffff" text-anchor="middle">5. ShowSelected diff</text>
+<text x="695.2" y="1457.1" font-size="12.0" fill="#ffffff" text-anchor="middle">5. Public suffix list</text>
 <rect x="771.0" y="1408.5" width="149.5" height="89.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="845.8" y="1456.4" font-size="10.0" fill="#ffffff" text-anchor="middle">6. Job objects + profiles</text>
+<text x="845.8" y="1456.4" font-size="10.0" fill="#ffffff" text-anchor="middle">6. Pipe/profile isolation</text>
 <rect x="921.5" y="1408.5" width="149.5" height="89.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="996.2" y="1456.4" font-size="10.0" fill="#ffffff" text-anchor="middle">7. Pipe/profile isolation</text>
+<text x="996.2" y="1456.7" font-size="10.8" fill="#ffffff" text-anchor="middle">7. WebKit feature stubs</text>
 <rect x="1072.0" y="1408.5" width="149.5" height="89.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
 <text x="1146.8" y="1456.7" font-size="10.8" fill="#ffffff" text-anchor="middle">8. UI integration tests</text>
-<text x="620.0" y="1528" font-size="11" fill="#777" text-anchor="middle">audited by reading every source file, building, running 92 tests, and driving the app · 2026-11-21</text>
+<text x="620.0" y="1528" font-size="11" fill="#777" text-anchor="middle">audited by reading every source file, building, running 96 tests, and driving the app · 2026-11-21</text>
 </svg>

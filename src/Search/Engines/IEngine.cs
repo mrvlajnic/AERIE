@@ -68,6 +68,8 @@ sealed record ExtensionInfo(string Id, string Name, string Folder, string? Store
 /// Chrome extensions, as each engine runs them.
 interface IExtensionHost
 {
+    /// False when this engine cannot run extensions safely.
+    bool Enabled => true;
     IReadOnlyList<ExtensionInfo> All { get; }
     string About { get; }
     Task<string> InstallFromStore(string link);

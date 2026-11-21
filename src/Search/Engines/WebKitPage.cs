@@ -165,9 +165,14 @@ sealed class WebKitPage : IPage
         var a = WK.Str("search");
         WK.WKUserContentControllerAddScriptMessageHandler(Controller, a, &OnMessage, Info);
         WK.WKRelease(a);
-        var b = WK.Str("searchExt");
-        WK.WKUserContentControllerAddScriptMessageHandler(Controller, b, &OnExtensionMessage, Info);
-        WK.WKRelease(b);
+        // No extension bridge on WebKit: its page-world runtime is disabled
+        // (see WebKitExtensions.Enabled), so a page has nothing to talk to.
+        if (engine.Extensions.Enabled)
+        {
+            var b = WK.Str("searchExt");
+            WK.WKUserContentControllerAddScriptMessageHandler(Controller, b, &OnExtensionMessage, Info);
+            WK.WKRelease(b);
+        }
     }
 
     // Callbacks -----------------------------------------------------------------

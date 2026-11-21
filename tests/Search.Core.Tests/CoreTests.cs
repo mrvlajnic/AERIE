@@ -150,33 +150,135 @@ public class CrxTests
             using (var w = new StreamWriter(z.CreateEntry("manifest.json").Open()))
                 w.Write("{\"manifest_version\":3,\"name\":\"T\",\"action\":{\"default_popup\":\"/popup.html\"}}");
             z.CreateEntry("_metadata/verified_contents.json").Open().Dispose();
+        }
+        return ms.ToArray();
+    }
+
+    static byte[] ZipWithTraversal()
+    {
+        var ms = new MemoryStream();
+        using (var z = new ZipArchive(ms, ZipArchiveMode.Create, true))
+        {
+            using (var w = new StreamWriter(z.CreateEntry("manifest.json").Open()))
+                w.Write("{\"manifest_version\":3,\"name\":\"T\"}");
             z.CreateEntry("../escape.txt").Open().Dispose();
         }
         return ms.ToArray();
     }
 
-    [Fact]
-    public void UnpacksCrx3()
+    static byte[] Varint(ulong v)
     {
-        var zip = Zip();
-        var header = new byte[] { 1, 2, 3, 4, 5 };
-        var crx = new List<byte>();
-        crx.AddRange("Cr24"u8.ToArray());
-        crx.AddRange(BitConverter.GetBytes(3u));
-        crx.AddRange(BitConverter.GetBytes((uint)header.Length));
-        crx.AddRange(header);
-        crx.AddRange(zip);
-        var root = Path.Combine(Path.GetTempPath(), "crxtest-" + Guid.NewGuid().ToString("N"));
+        var bytes = new List<byte>();
+        do
+        {
+            byte b = (byte)(v & 0x7F);
+            v >>= 7;
+            if (v != 0) b |= 0x80;
+            bytes.Add(b);
+        } while (v != 0);
+        return bytes.ToArray();
+    }
+
+    static byte[] Field(int number, byte[] data) =>
+        Varint((ulong)((number << 3) | 2)).Concat(Varint((ulong)data.Length)).Concat(data).ToArray();
+
+    static string IdFor(byte[] key)
+    {
+        var hash = System.Security.Cryptography.SHA256.HashData(key);
+        var sb = new System.Text.StringBuilder();
+        foreach (var b in hash.AsSpan(0, 16))
+        {
+            sb.Append((char)('a' + (b >> 4)));
+            sb.Append((char)('a' + (b & 0xF)));
+        }
+        return sb.ToString();
+    }
+
+    /// A real CRX3: protobuf header, RSA/SHA-256 signature, and the id the
+    /// key derives, over a small zip.
+    static (byte[] Crx, string Id) Signed(byte[] zip)
+    {
+        using var rsa = System.Security.Cryptography.RSA.Create(2048);
+        var publicKey = rsa.ExportSubjectPublicKeyInfo();
+        var id = IdFor(publicKey);
+        var signedHeader = Field(1, System.Text.Encoding.ASCII.GetBytes(id));
+        var context = System.Text.Encoding.ASCII.GetBytes("CRX3 SignedData\0");
+        var payload = context
+            .Concat(BitConverter.GetBytes((uint)signedHeader.Length))
+            .Concat(signedHeader)
+            .Concat(zip)
+            .ToArray();
+        var signature = rsa.SignData(payload, System.Security.Cryptography.HashAlgorithmName.SHA256,
+            System.Security.Cryptography.RSASignaturePadding.Pkcs1);
+        var proof = Field(1, publicKey).Concat(Field(2, signature)).ToArray();
+        var header = Field(2, proof).Concat(Field(10000, signedHeader)).ToArray();
+        var crx = "Cr24"u8.ToArray()
+            .Concat(BitConverter.GetBytes(3u))
+            .Concat(BitConverter.GetBytes((uint)header.Length))
+            .Concat(header)
+            .Concat(zip)
+            .ToArray();
+        return (crx, id);
+    }
+
+    static string TempRoot() => Path.Combine(Path.GetTempPath(), "crxtest-" + Guid.NewGuid().ToString("N"));
+
+    [Fact]
+    public void InstallsVerifiedCrx3()
+    {
+        var (crx, id) = Signed(Zip());
+        var root = TempRoot();
         var dir = Path.Combine(root, "ext");
         try
         {
-            Crx.Unpack(crx.ToArray(), dir);
+            Crx.Install(crx, dir, id);
             Assert.True(File.Exists(Path.Combine(dir, "manifest.json")));
             Assert.False(Directory.Exists(Path.Combine(dir, "_metadata")));
-            Assert.False(File.Exists(Path.Combine(root, "escape.txt")));
             Assert.Equal("popup.html", Crx.Popup(dir));
         }
         finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    }
+
+    [Fact]
+    public void RejectsTamperedPayload()
+    {
+        var (crx, id) = Signed(Zip());
+        crx[^1] ^= 0xFF;   // the archive changed after it was signed
+        var root = TempRoot();
+        try { Assert.Throws<InvalidDataException>(() => Crx.Install(crx, Path.Combine(root, "ext"), id)); }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    }
+
+    [Fact]
+    public void RejectsTheWrongId()
+    {
+        var (crx, _) = Signed(Zip());
+        var root = TempRoot();
+        try { Assert.Throws<InvalidDataException>(() => Crx.Install(crx, Path.Combine(root, "ext"), "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa")); }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    }
+
+    [Fact]
+    public void RejectsCrx2()
+    {
+        var data = new byte[16 + 3 + 4];
+        "Cr24"u8.CopyTo(data);
+        BitConverter.GetBytes(2u).CopyTo(data, 4);
+        BitConverter.GetBytes(3u).CopyTo(data, 8);
+        BitConverter.GetBytes(4u).CopyTo(data, 12);
+        var root = TempRoot();
+        try { Assert.Throws<InvalidDataException>(() => Crx.Install(data, Path.Combine(root, "ext"), "x")); }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+    }
+
+    [Fact]
+    public void RejectsTraversal()
+    {
+        var (crx, id) = Signed(ZipWithTraversal());
+        var root = TempRoot();
+        try { Assert.Throws<InvalidDataException>(() => Crx.Install(crx, Path.Combine(root, "ext"), id)); }
+        finally { if (Directory.Exists(root)) Directory.Delete(root, true); }
+        Assert.False(File.Exists(Path.Combine(root, "escape.txt")));
     }
 
     [Fact]

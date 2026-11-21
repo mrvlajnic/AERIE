@@ -15,7 +15,7 @@ being established.
 
 ![AERIE code audit treemap](docs/windows-port-audit.svg)
 
-*Audit of the current prototype — 63 findings: **23 fixed (37%)**, 2 blockers,
+*Audit of the current prototype — 63 findings: **25 fixed (40%)**, no blockers,
 15 major, 19 minor. Section percentages show how much of each area is fixed.
 Tiles are coloured by severity and sized by impact; the full map is
 [docs/windows-port-audit.svg](docs/windows-port-audit.svg).*
@@ -29,14 +29,18 @@ Tiles are coloured by severity and sized by impact; the full map is
 - Chrome extensions through WebView2's extension support
 - An optional experimental WebKit engine (Playwright's WinCairo build)
 
-## Known blockers
+## Known issues
 
-The audit found 63 issues; this batch fixes 23 of them. **Two blockers remain:**
+The audit found 63 issues; **25 are fixed (40%) and no blockers remain.**
 
-1. **CRX3 signatures are never verified** — an altered extension package would
-   be accepted.
-2. **WebKit: any page can impersonate an extension** — its runtime trusts a
-   client-supplied extension id.
+The largest remaining items:
+
+- **Rendering** — the tab strip is still rebuilt on every page event.
+- **History** — a 20k-entry file is written on the UI thread.
+- **Lifecycle** — no job objects, and a deleted space leaves its profile behind.
+- **Shield** — the public-suffix heuristic can misclassify a site boundary.
+- **WebKit** — find, print, picture-in-picture and passwords remain stubs.
+- **UI tests** — CI still has none.
 
 Fixed in this batch, each verified against the running build:
 
@@ -62,9 +66,15 @@ Fixed in this batch, each verified against the running build:
 - **Accessibility** — every button, tab, pin and toggle is now Tab-reachable,
   activates with Enter or Space, shows a focus glow, and exposes a real UIA
   Button with an Invoke pattern (checked through the accessibility tree).
+- **CRX3** — the signature and extension id are verified over the signed
+  header and archive before anything is unpacked; tampered, wrong-id, CRX2 and
+  zip-traversal packages are rejected (96 tests).
+- **WebKit extensions** — the page-world runtime is disabled: any page could
+  act as an installed extension. The menu and settings explain it; WebView2
+  remains the supported extension path.
 - **Core parser** — `search:` is no longer treated as a URL, any IPv6 literal
   parses, file URLs may contain spaces, and titles decode their paths; a parser
-  regression corpus brings the suite to 92 tests.
+  regression corpus brings the suite to 96 tests.
 - **Cosmetic blocking** — the ad-slot CSS is emitted one rule per selector, so
   one selector the engine stops understanding cannot disable the rest.
 - **CI** — the benchmark job now fails when the WebView2 run crashes or writes

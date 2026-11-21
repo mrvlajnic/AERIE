@@ -58,12 +58,20 @@ sealed class WebKitExtensions : IExtensionHost
     static string DataFolder(string id) => Path.Combine(Store.Folder, "ExtensionData", id);
     string Language => System.Globalization.CultureInfo.CurrentUICulture.Name;
 
-    public string About =>
-        "Chrome extensions run on Search's own extension runtime, built for WebKit: content scripts, popups, options, " +
-        "background workers, storage, messaging, tabs, scripting, alarms and declarativeNetRequest. Extensions that " +
-        "need webRequest blocking (classic uBlock Origin) can't run; uBlock Origin Lite can.";
+    /// Off: WebKit's content scripts share the page's JavaScript world, so any
+    /// page could speak as an installed extension. WebView2 is the supported
+    /// path; this runtime stays for a future isolated-world design.
+    public bool Enabled => false;
 
-    public IReadOnlyList<ExtensionInfo> All => records.Items.Select(r =>
+    public string About => Enabled
+        ? "Chrome extensions run on Search's own extension runtime."
+        : "Extensions are disabled on the experimental WebKit engine: its page-world bridge would let any page " +
+          "act as an installed extension. Switch to the WebView2 engine to use Chrome extensions.";
+
+    static InvalidOperationException Disabled() =>
+        new("Extensions are disabled on the WebKit engine. Switch to WebView2 to use Chrome extensions.");
+
+    public IReadOnlyList<ExtensionInfo> All => !Enabled ? Array.Empty<ExtensionInfo>() : records.Items.Select(r =>
     {
         loaded.TryGetValue(r.Id, out var l);
         var name = l?.Manifest.Name ?? Path.GetFileName(r.Folder);
@@ -73,6 +81,7 @@ sealed class WebKitExtensions : IExtensionHost
 
     public async Task Start()
     {
+        if (!Enabled) return;
         foreach (var r in records.Items.ToList())
             if (r.Enabled) try { await Load(r); } catch (Exception e) { Log(r.Id, e); }
     }
@@ -121,6 +130,7 @@ sealed class WebKitExtensions : IExtensionHost
     /// The content-script loader every tab runs before its document.
     public IEnumerable<string> ContentScripts()
     {
+        if (!Enabled) yield break;
         if (loader == null)
         {
             var with = loaded.Values.Where(l => l.Manifest.ContentScripts.Count > 0).ToList();
@@ -137,17 +147,20 @@ sealed class WebKitExtensions : IExtensionHost
 
     public async Task<string> InstallFromStore(string link)
     {
+        if (!Enabled) throw Disabled();
         var id = Crx.IdFrom(link) ?? throw new InvalidOperationException("That isn't a Chrome Web Store link.");
         var bytes = await http.GetByteArrayAsync(Crx.DownloadUrl(id));
         var folder = Path.Combine(Store.Folder, "Extensions", id);
-        await Task.Run(() => Crx.Unpack(bytes, folder));
+        await Task.Run(() => Crx.Install(bytes, folder, id));
         return await Add(folder, id, id);
     }
 
-    public Task<string> AddFolder(string folder) => Add(folder, null, null);
+    public Task<string> AddFolder(string folder) =>
+        Enabled ? Add(folder, null, null) : Task.FromException<string>(Disabled());
 
     async Task<string> Add(string folder, string? id, string? storeId)
     {
+        if (!Enabled) throw Disabled();
         var m = Manifest.Load(folder, id);
         Unload(m.Id);
         records.Items.RemoveAll(r => r.Id == m.Id);
@@ -161,6 +174,7 @@ sealed class WebKitExtensions : IExtensionHost
 
     public Task Remove(ExtensionInfo e)
     {
+        if (!Enabled) return Task.CompletedTask;
         Unload(e.Id);
         records.Items.RemoveAll(r => r.Id == e.Id);
         Store.Save("webkit-extensions.json", records);
@@ -172,6 +186,7 @@ sealed class WebKitExtensions : IExtensionHost
 
     public async Task Enable(ExtensionInfo e, bool on)
     {
+        if (!Enabled) return;
         var r = records.Items.FirstOrDefault(x => x.Id == e.Id);
         if (r == null) return;
         r.Enabled = on;
@@ -181,6 +196,7 @@ sealed class WebKitExtensions : IExtensionHost
 
     public void OpenPopup(BrowserWindow browser, ExtensionInfo e)
     {
+        if (!Enabled) { browser.Toast("Extensions are disabled on the WebKit engine."); return; }
         if (!loaded.TryGetValue(e.Id, out var l)) { browser.Toast(e.Name + " is turned off"); return; }
         var popup = l.Popup ?? l.Manifest.Popup;
         if (popup == null)
@@ -218,6 +234,7 @@ sealed class WebKitExtensions : IExtensionHost
     /// only what a content script may).
     public async void Receive(WebKitPage from, string body, string origin, bool mainFrame, Action<string> reply)
     {
+        if (!Enabled) { reply("null"); return; }
         JsonObject env;
         try { env = JsonNode.Parse(body) as JsonObject ?? new JsonObject(); }
         catch { reply(Error("bad message")); return; }
@@ -666,7 +683,7 @@ sealed class WebKitExtensions : IExtensionHost
     /// The browser telling extensions about tabs: tabs.on…, webNavigation.on….
     public void Tabs(string what, Tab t)
     {
-        if (loaded.Count == 0) return;
+        if (!Enabled || loaded.Count == 0) return;
         var obj = TabObject(t);
         if (what == "removed") tabIds.Remove(t);
         foreach (var l in loaded.Values)
