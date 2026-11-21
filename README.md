@@ -15,7 +15,7 @@ being established.
 
 ![AERIE code audit treemap](docs/windows-port-audit.svg)
 
-*Audit of the current prototype — 63 findings: 18 fixed, 2 blockers, 16 major,
+*Audit of the current prototype — 63 findings: 19 fixed, 2 blockers, 15 major,
 23 minor. Tiles are coloured by severity and sized by impact; the full map is
 [docs/windows-port-audit.svg](docs/windows-port-audit.svg).*
 
@@ -30,7 +30,7 @@ being established.
 
 ## Known blockers
 
-The audit found 63 issues; this batch fixes 18 of them. **Two blockers remain:**
+The audit found 63 issues; this batch fixes 19 of them. **Two blockers remain:**
 
 1. **CRX3 signatures are never verified** — an altered extension package would
    be accepted.
@@ -46,6 +46,9 @@ Fixed in this batch, each verified against the running build:
 - **Private tabs** — the omnibox no longer shows history or completions there.
 - **Focus** — selecting a tab or dismissing a sheet no longer steals focus from
   an open panel.
+- **Omnibox** — no longer dismisses on the activation bounce while opening,
+  follows the browser window when it moves, and retries focus if Windows refuses
+  activation.
 - **Small input fixes** — the placeholder no longer covers a filled URL, typing
   in the empty state opens the field, Tab walks the suggestions, a bad custom
   engine no longer crashes, and horizontal wheel scrolling over the tabs works.

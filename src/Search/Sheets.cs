@@ -2,6 +2,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
 using Search.Core;
 
 namespace Search;
@@ -19,6 +20,7 @@ abstract class Sheet : Window
     protected readonly BrowserWindow Browser;
     readonly double width;
     bool closing;
+    DateTime openedAt;
 
     protected Sheet(BrowserWindow owner, double width)
     {
@@ -34,7 +36,14 @@ abstract class Sheet : Window
         Width = width + 36;
         UseLayoutRounding = true;
         TextOptions.SetTextFormattingMode(this, TextFormattingMode.Display);
-        Deactivated += (_, _) => Dismiss();
+        Deactivated += (_, _) =>
+        {
+            if (closing) return;
+            // Showing a borderless window can bounce activation once; ignoring
+            // that first moment is what stops it dismissing itself on open.
+            if ((DateTime.UtcNow - openedAt).TotalMilliseconds < 300) return;
+            Dismiss();
+        };
         Closed += (_, _) => { if (active == this) active = null; };
         PreviewKeyDown += (_, e) => { if (e.Key == Key.Escape) { e.Handled = true; Dismiss(); } };
     }
@@ -47,8 +56,15 @@ abstract class Sheet : Window
         var at = Browser.Anchor(width + 36);
         Left = at.X; Top = at.Y - 18;
         active = this;
-        // Wait for Loaded: focusing before the window has laid out can be lost.
-        Loaded += (_, _) => { Activate(); Focused()?.Focus(); };
+        openedAt = DateTime.UtcNow;
+        // Wait for Loaded and let activation settle, then focus. If Windows
+        // still refused activation, bring the window forward once.
+        Loaded += (_, _) => Dispatcher.BeginInvoke(DispatcherPriority.Input, () =>
+        {
+            Activate();
+            Focused()?.Focus();
+            if (!IsActive) Native.BringForward(this);
+        });
         Show();
     }
 
@@ -118,6 +134,17 @@ sealed class Omnibox : Sheet
         typed = box.Text;
         box.TextChanged += (_, _) => Changed();
         box.PreviewKeyDown += Keys;
+        // The panel is its own window: keep it over the field when the browser moves.
+        owner.LocationChanged += FollowOwner;
+        owner.SizeChanged += FollowOwner;
+        Closed += (_, _) => { owner.LocationChanged -= FollowOwner; owner.SizeChanged -= FollowOwner; };
+    }
+
+    void FollowOwner(object? sender, EventArgs e)
+    {
+        if (!IsVisible) return;
+        var at = Browser.Anchor(Width);
+        Left = at.X; Top = at.Y - 18;
     }
 
     protected override IInputElement Focused()
@@ -232,6 +259,7 @@ sealed class Omnibox : Sheet
                 if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control) && !box.Text.Contains('.'))
                 { Commit("https://www." + box.Text.Trim() + ".com/"); break; }   // Ctrl+Enter: www.…com
                 if (rows.Count > 0) rows[Math.Clamp(chosen, 0, rows.Count - 1)].Go();
+                else if (box.Text.Trim().Length > 0) Commit(box.Text.Trim());
                 break;
             case Key.Tab:
                 // Tab belongs to the field: accept a completion, or walk the rows.
