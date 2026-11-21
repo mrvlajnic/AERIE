@@ -182,9 +182,8 @@ public class CrxTests
     static byte[] Field(int number, byte[] data) =>
         Varint((ulong)((number << 3) | 2)).Concat(Varint((ulong)data.Length)).Concat(data).ToArray();
 
-    static string IdFor(byte[] key)
+    static string IdText(byte[] hash)
     {
-        var hash = System.Security.Cryptography.SHA256.HashData(key);
         var sb = new System.Text.StringBuilder();
         foreach (var b in hash.AsSpan(0, 16))
         {
@@ -194,14 +193,18 @@ public class CrxTests
         return sb.ToString();
     }
 
+    static string IdFor(byte[] key) => IdText(System.Security.Cryptography.SHA256.HashData(key));
+
     /// A real CRX3: protobuf header, RSA/SHA-256 signature, and the id the
     /// key derives, over a small zip.
     static (byte[] Crx, string Id) Signed(byte[] zip)
     {
         using var rsa = System.Security.Cryptography.RSA.Create(2048);
         var publicKey = rsa.ExportSubjectPublicKeyInfo();
-        var id = IdFor(publicKey);
-        var signedHeader = Field(1, System.Text.Encoding.ASCII.GetBytes(id));
+        var hash = System.Security.Cryptography.SHA256.HashData(publicKey);
+        var id = IdText(hash);
+        // The signed id is 16 packed nibble-bytes, not its a-p text form.
+        var signedHeader = Field(1, hash.AsSpan(0, 16).ToArray());
         var context = System.Text.Encoding.ASCII.GetBytes("CRX3 SignedData\0");
         var payload = context
             .Concat(BitConverter.GetBytes((uint)signedHeader.Length))

@@ -164,7 +164,8 @@ public static partial class Crx
         throw new InvalidDataException("The package's signature does not verify.");
     }
 
-    /// The id in SignedData (field 1).
+    /// The id in SignedData (field 1): 16 bytes, two nibbles each, written as
+    /// the letters a-p — the same shape as the id derived from the key.
     static string CrxId(ReadOnlySpan<byte> signedHeader)
     {
         int i = 0;
@@ -175,7 +176,16 @@ public static partial class Crx
             int wire = (int)(tag & 7);
             if (wire != 2) { Skip(signedHeader, ref i, wire); continue; }
             var payload = Field(signedHeader, ref i);
-            if (field == 1) return Encoding.ASCII.GetString(payload);
+            if (field != 1) continue;
+            if (payload.Length != 16)
+                throw new InvalidDataException("The signed header's id has the wrong length.");
+            var text = new StringBuilder(32);
+            foreach (var b in payload)
+            {
+                text.Append((char)('a' + (b >> 4)));
+                text.Append((char)('a' + (b & 0x0F)));
+            }
+            return text.ToString();
         }
         throw new InvalidDataException("The signed header has no extension id.");
     }
