@@ -49,6 +49,9 @@ jobs:
           $dir = "out/Search-WebKit-win-x64"
           dotnet publish src/Search -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o $dir
           Expand-Archive $zip -DestinationPath $dir -Force
+          # The zip must land flat: Search.exe falls back to WebView2 silently
+          # when WebKit2.dll is not beside it.
+          if (-not (Test-Path "$dir/WebKit2.dll")) { throw "WebKit2.dll is missing from the downloaded archive" }
           # Playwright's own test shell isn't part of Search.
           Remove-Item "$dir/Playwright.exe", "$dir/protocol.json" -ErrorAction SilentlyContinue
           Copy-Item LICENSE, THIRD-PARTY-NOTICES.md $dir
@@ -124,13 +127,21 @@ jobs:
             $out = Join-Path (Resolve-Path bench) "bench-$($s.name).json"
             Write-Host "== $($s.name): $($s.exe)"
             $p = Start-Process $s.exe -ArgumentList "--engine=$($s.engine)", "--bench=$out", "--data=$data" -PassThru
-            if (-not $p.WaitForExit(420000)) { Write-Host "timed out"; Stop-Process -Id $p.Id -Force }
-            Write-Host "exit code: $($p.ExitCode)"
+            $exited = $p.WaitForExit(420000)
+            if (-not $exited) { Write-Host "timed out"; Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue }
+            $code = if ($exited) { $p.ExitCode } else { -1 }
+            Write-Host "exit code: $code"
             Get-Process | Where-Object { $_.ProcessName -match 'WebKit|msedgewebview2|Search' } | Stop-Process -Force -ErrorAction SilentlyContinue
             if (Test-Path (Join-Path $data "errors.log")) { Copy-Item (Join-Path $data "errors.log") "bench/errors-$($s.name).log"; Get-Content (Join-Path $data "errors.log") | Select-Object -First 60 }
             if (Test-Path (Join-Path $data "trace.log")) { Copy-Item (Join-Path $data "trace.log") "bench/trace-$($s.name).log"; Write-Host "-- last steps:"; Get-Content (Join-Path $data "trace.log") | Select-Object -Last 25 }
             if (Test-Path $out) { $j = Get-Content $out -Raw | ConvertFrom-Json; foreach ($x in $j.samples) { Write-Host ("{0}: {1:N0} MB private, {2:N0} MB working set" -f $x.label, $x.privateMB, $x.workingSetMB); $x.byProcess.PSObject.Properties | ForEach-Object { Write-Host ("    {0}: {1}" -f $_.Name, $_.Value) } } }
-            if (-not (Test-Path $out)) { Write-Host "::warning::$($s.name) wrote no report" }
+            # The default engine must prove it works; the experimental WebKit
+            # build is allowed to fail without turning the whole job red.
+            if ($code -ne 0 -and $s.name -eq "webview2") { throw "$($s.name) exited $code" }
+            if (-not (Test-Path $out)) {
+              if ($s.name -eq "webview2") { throw "$($s.name) wrote no report" }
+              Write-Host "::warning::$($s.name) wrote no report"
+            }
             Start-Sleep 3
             $dump = Get-ChildItem $dumps -Filter *.dmp | Sort-Object LastWriteTime -Descending | Select-Object -First 1
             if ($dump -and $cdb) {

@@ -92,6 +92,36 @@ sealed class WebView2Page : IPage
     readonly List<string> scriptIds = new();
     bool disposed;
 
+    /// Browser shortcuts pressed inside a page go to the page's process. The
+    /// WPF WebView2 control exposes no accelerator event, so a capture listener
+    /// posts only the keys the window's own table already owns.
+    const string KeyBridge = """
+        (function () {
+          if (window.__searchKeyBridge) return;
+          window.__searchKeyBridge = true;
+          var has = function (list, k) { return list.indexOf(k) >= 0; };
+          window.addEventListener('keydown', function (e) {
+            var k = (e.key || '').toLowerCase();
+            var take = false;
+            if (e.ctrlKey && !e.altKey && !e.shiftKey)
+              take = has('t n l w k s r d h y , [ ] 1 2 3 4 5 6 7 8 9 tab pagedown pageup', k);
+            else if (e.ctrlKey && e.shiftKey && !e.altKey)
+              take = has('t n r p h u s tab [ ]', k);
+            else if (e.ctrlKey && e.altKey && !e.shiftKey)
+              take = has('arrowleft arrowright c i', k);
+            else if (e.altKey && !e.ctrlKey && !e.shiftKey)
+              take = has('arrowleft arrowright d home', k);
+            else if (!e.ctrlKey && !e.altKey && !e.shiftKey)
+              take = has('f5 f6 f11', k);
+            if (!take) return;
+            e.preventDefault();
+            try {
+              window.chrome.webview.postMessage({ kind: 'key', key: k, ctrl: e.ctrlKey, shift: e.shiftKey, alt: e.altKey });
+            } catch (_) { }
+          }, true);
+        })();
+        """;
+
     public WebView2Page(WebView2Engine engine, PageOwner owner, bool adopt = false)
     {
         this.engine = engine;
@@ -124,6 +154,20 @@ sealed class WebView2Page : IPage
 
     async Task Init()
     {
+        try { await InitCore(); }
+        catch (Exception e)
+        {
+            // A failed controller used to leave a blank tab with no trace:
+            // ready was discarded and the error never observed.
+            Trace.Log("page init failed: " + e);
+            engine.Browser.Toast("A page failed to start (" + e.GetType().Name + ")");
+            Title = "Page failed to start";
+            Changed?.Invoke();
+        }
+    }
+
+    async Task InitCore()
+    {
         var o = engine.Env.CreateCoreWebView2ControllerOptions();
         o.ProfileName = owner.Profile;
         o.IsInPrivateModeEnabled = owner.Private;
@@ -134,7 +178,7 @@ sealed class WebView2Page : IPage
         core.Settings.IsPasswordAutosaveEnabled = settings.SavePasswords && !owner.Private;
         core.Settings.IsGeneralAutofillEnabled = !owner.Private;
         core.Settings.IsStatusBarEnabled = true;
-        core.Settings.AreDevToolsEnabled = true;
+        core.Settings.AreDevToolsEnabled = settings.DevTools || System.Diagnostics.Debugger.IsAttached;
 
         // The ad blocker: only requests to the listed hosts reach the handler.
         foreach (var d in Shield.Unwanted)
@@ -153,6 +197,7 @@ sealed class WebView2Page : IPage
         };
         await RefreshShield();
         await AddScripts();
+        await core.AddScriptToExecuteOnDocumentCreatedAsync(KeyBridge);
 
         core.SourceChanged += (_, _) => { Url = core.Source; Changed?.Invoke(); };
         core.DocumentTitleChanged += (_, _) => { Title = core.DocumentTitle; Changed?.Invoke(); };
@@ -278,12 +323,13 @@ sealed class WebView2Page : IPage
 
     public void SetShown(bool shown)
     {
-        view.Visibility = shown ? Visibility.Visible : Visibility.Hidden;
         if (Core is { } core)
         {
             core.MemoryUsageTargetLevel = shown ? CoreWebView2MemoryUsageTargetLevel.Normal : CoreWebView2MemoryUsageTargetLevel.Low;
+            // Resume before the controller becomes visible, as WebView2 requires.
             if (shown && core.IsSuspended) core.Resume();
         }
+        view.Visibility = shown ? Visibility.Visible : Visibility.Hidden;
     }
 
     public async Task Freeze()

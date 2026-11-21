@@ -9,13 +9,13 @@
 <rect x="379.0" y="88" width="96" height="26" rx="4" fill="#2e7d32"/>
 <text x="427" y="106" font-size="13.5" font-weight="bold" fill="#fff" text-anchor="middle">launch: OK</text>
 <rect x="483.25" y="88" width="104" height="26" rx="4" fill="#c62828"/>
-<text x="535" y="106" font-size="13.5" font-weight="bold" fill="#fff" text-anchor="middle">blockers: 4</text>
+<text x="535" y="106" font-size="13.5" font-weight="bold" fill="#fff" text-anchor="middle">blockers: 2</text>
 <rect x="594.925" y="88" width="89" height="26" rx="4" fill="#e08a1e"/>
-<text x="639" y="106" font-size="13.5" font-weight="bold" fill="#241100" text-anchor="middle">major: 24</text>
+<text x="639" y="106" font-size="13.5" font-weight="bold" fill="#241100" text-anchor="middle">major: 16</text>
 <rect x="691.75" y="88" width="89" height="26" rx="4" fill="#d9b40a"/>
-<text x="736" y="106" font-size="13.5" font-weight="bold" fill="#241f00" text-anchor="middle">minor: 30</text>
-<rect x="788.575" y="88" width="81" height="26" rx="4" fill="#1b5e20"/>
-<text x="829" y="106" font-size="13.5" font-weight="bold" fill="#fff" text-anchor="middle">fixed: 1</text>
+<text x="736" y="106" font-size="13.5" font-weight="bold" fill="#241f00" text-anchor="middle">minor: 23</text>
+<rect x="788.575" y="88" width="89" height="26" rx="4" fill="#1b5e20"/>
+<text x="833" y="106" font-size="13.5" font-weight="bold" fill="#fff" text-anchor="middle">fixed: 18</text>
 <text x="22" y="138" font-size="13" fill="#333"><tspan font-weight="bold" fill="#777">EVIDENCE  </tspan>30 CultureNotFoundExceptions in errors.log → InvariantGlobalization removed → typed example.com, page loaded, session + history written, no errors.</text>
 <rect x="22" y="158" width="13" height="13" rx="3" fill="#c62828" stroke="#666" stroke-width="0.4"/>
 <text x="40" y="169" font-size="12" fill="#444">blocker</text>
@@ -31,34 +31,34 @@
 <line x1="22" y1="180" x2="1578" y2="180" stroke="#e0e0e0"/>
 <text x="22" y="216" font-size="17.5" font-weight="bold" fill="#111">Input &amp; focus</text>
 <text x="165" y="215" font-size="12.5" fill="#777">the one field, keys, focus</text>
-<text x="1578" y="215" font-size="12.5" font-weight="bold" fill="#666" text-anchor="end">21.7% · 13 issues · 1 blocker · 5 major · 6 minor · 1 fixed</text>
+<text x="1578" y="215" font-size="12.5" font-weight="bold" fill="#666" text-anchor="end">21.7% · 13 issues · 1 major · 1 minor · 11 fixed</text>
 <rect x="22" y="228" width="1556" height="255" fill="#efefef"/>
-<rect x="22.5" y="228.5" width="221.3" height="254.3" fill="#c62828" stroke="#ffffff" stroke-width="1"/>
-<text x="133.1" y="360.1" font-size="13.0" fill="#ffffff" text-anchor="middle">Page shortcuts dead</text>
+<rect x="22.5" y="228.5" width="221.3" height="254.3" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="133.1" y="360.1" font-size="13.0" fill="#ffffff" text-anchor="middle">Page shortcuts (fixed)</text>
 <rect x="244.8" y="228.5" width="132.4" height="254.3" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
 <text x="311.0" y="358.8" font-size="9.4" fill="#ffffff" text-anchor="middle">Typing fixed (verified)</text>
-<rect x="378.2" y="228.5" width="132.4" height="254.3" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
-<text x="444.3" y="359.0" font-size="9.8" fill="#241100" text-anchor="middle">No field in top layout</text>
-<rect x="511.5" y="228.5" width="132.4" height="254.3" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
-<text x="577.7" y="358.6" font-size="8.6" fill="#241100" text-anchor="middle">Private tab leaks history</text>
-<rect x="644.9" y="228.5" width="132.4" height="254.3" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
-<text x="711.1" y="359.5" font-size="11.4" fill="#241100" text-anchor="middle">Focus steals sheets</text>
+<rect x="378.2" y="228.5" width="132.4" height="254.3" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="444.3" y="359.5" font-size="11.4" fill="#ffffff" text-anchor="middle">Field in top layout</text>
+<rect x="511.5" y="228.5" width="132.4" height="254.3" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="577.7" y="358.7" font-size="9.0" fill="#ffffff" text-anchor="middle">Private-tab leak (fixed)</text>
+<rect x="644.9" y="228.5" width="132.4" height="254.3" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="711.1" y="359.5" font-size="11.4" fill="#ffffff" text-anchor="middle">Focus guard (fixed)</text>
 <rect x="778.3" y="228.5" width="132.4" height="254.3" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
 <text x="844.5" y="358.7" font-size="9.0" fill="#241100" text-anchor="middle">Omnibox window dismisses</text>
-<rect x="911.6" y="228.5" width="221.3" height="152.2" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
-<text x="1022.3" y="309.0" font-size="13.0" fill="#241100" text-anchor="middle">Exceptions swallowed</text>
-<rect x="911.6" y="381.7" width="221.3" height="101.1" fill="#d9b40a" stroke="#ffffff" stroke-width="1"/>
-<text x="1022.3" y="436.6" font-size="13.0" fill="#241f00" text-anchor="middle">Placeholder over URL</text>
-<rect x="1133.9" y="228.5" width="176.8" height="126.6" fill="#d9b40a" stroke="#ffffff" stroke-width="1"/>
-<text x="1222.3" y="295.8" font-size="11.8" fill="#241f00" text-anchor="middle">Empty state types nothing</text>
-<rect x="1133.9" y="356.1" width="176.8" height="126.6" fill="#d9b40a" stroke="#ffffff" stroke-width="1"/>
-<text x="1222.3" y="423.9" font-size="13.0" fill="#241f00" text-anchor="middle">Tab escapes the field</text>
+<rect x="911.6" y="228.5" width="221.3" height="152.2" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="1022.3" y="309.0" font-size="13.0" fill="#ffffff" text-anchor="middle">Errors surfaced, log capped</text>
+<rect x="911.6" y="381.7" width="221.3" height="101.1" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="1022.3" y="436.6" font-size="13.0" fill="#ffffff" text-anchor="middle">Placeholder (fixed)</text>
+<rect x="1133.9" y="228.5" width="176.8" height="126.6" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="1222.3" y="295.7" font-size="11.4" fill="#ffffff" text-anchor="middle">Empty-state typing (fixed)</text>
+<rect x="1133.9" y="356.1" width="176.8" height="126.6" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="1222.3" y="423.9" font-size="13.0" fill="#ffffff" text-anchor="middle">Tab in field (fixed)</text>
 <rect x="1311.8" y="228.5" width="87.9" height="254.3" fill="#d9b40a" stroke="#ffffff" stroke-width="1"/>
 <text x="1355.7" y="357.9" font-size="6.6" fill="#241f00" text-anchor="middle">Buttons not focusable</text>
-<rect x="1400.7" y="228.5" width="176.8" height="126.6" fill="#d9b40a" stroke="#ffffff" stroke-width="1"/>
-<text x="1489.1" y="296.2" font-size="13.0" fill="#241f00" text-anchor="middle">Custom engine NRE</text>
-<rect x="1400.7" y="356.1" width="176.8" height="126.6" fill="#d9b40a" stroke="#ffffff" stroke-width="1"/>
-<text x="1489.1" y="423.9" font-size="13.0" fill="#241f00" text-anchor="middle">H-wheel swallowed</text>
+<rect x="1400.7" y="228.5" width="176.8" height="126.6" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="1489.1" y="295.8" font-size="11.8" fill="#ffffff" text-anchor="middle">Custom engine NRE (fixed)</text>
+<rect x="1400.7" y="356.1" width="176.8" height="126.6" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="1489.1" y="423.9" font-size="13.0" fill="#ffffff" text-anchor="middle">H-wheel (fixed)</text>
 <text x="22" y="535.284578394575" font-size="17.5" font-weight="bold" fill="#111">Core logic (Search.Core)</text>
 <text x="274" y="534.284578394575" font-size="12.5" fill="#777">address, history, shielding, storage</text>
 <text x="1578" y="534.284578394575" font-size="12.5" font-weight="bold" fill="#666" text-anchor="end">19.6% · 12 issues · 1 blocker · 5 major · 5 minor · 1 info</text>
@@ -89,7 +89,7 @@
 <text x="1489.4" y="738.1" font-size="13.0" fill="#ffffff" text-anchor="middle">Core port present</text>
 <text x="22" y="838.8964789050838" font-size="17.5" font-weight="bold" fill="#111">WebView2 integration</text>
 <text x="234" y="837.8964789050838" font-size="12.5" fill="#777">permissions, crashes, downloads, extensions</text>
-<text x="1578" y="837.8964789050838" font-size="12.5" font-weight="bold" fill="#666" text-anchor="end">10.5% · 7 issues · 3 major · 4 minor</text>
+<text x="1578" y="837.8964789050838" font-size="12.5" font-weight="bold" fill="#666" text-anchor="end">10.5% · 7 issues · 3 major · 3 minor · 1 fixed</text>
 <rect x="22" y="850.8964789050838" width="1556" height="163" fill="#efefef"/>
 <rect x="22.5" y="851.4" width="273.6" height="162.1" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
 <text x="159.3" y="936.9" font-size="13.0" fill="#241100" text-anchor="middle">No permissions</text>
@@ -97,8 +97,8 @@
 <text x="433.9" y="936.9" font-size="13.0" fill="#241100" text-anchor="middle">Crash reload loop</text>
 <rect x="571.7" y="851.4" width="273.6" height="162.1" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
 <text x="708.5" y="936.9" font-size="13.0" fill="#241100" text-anchor="middle">No downloads</text>
-<rect x="846.3" y="851.4" width="182.1" height="162.1" fill="#d9b40a" stroke="#ffffff" stroke-width="1"/>
-<text x="937.3" y="936.9" font-size="13.0" fill="#241f00" text-anchor="middle">DevTools in release</text>
+<rect x="846.3" y="851.4" width="182.1" height="162.1" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="937.3" y="936.9" font-size="13.0" fill="#ffffff" text-anchor="middle">DevTools gated</text>
 <rect x="1029.3" y="851.4" width="182.1" height="162.1" fill="#d9b40a" stroke="#ffffff" stroke-width="1"/>
 <text x="1120.4" y="936.9" font-size="13.0" fill="#241f00" text-anchor="middle">Popups as tabs</text>
 <rect x="1212.4" y="851.4" width="182.1" height="162.1" fill="#d9b40a" stroke="#ffffff" stroke-width="1"/>
@@ -107,12 +107,12 @@
 <text x="1486.5" y="936.5" font-size="11.8" fill="#241f00" text-anchor="middle">process-per-site isolation</text>
 <text x="22" y="1066.0440918351974" font-size="17.5" font-weight="bold" fill="#111">WebKit engine &amp; extensions</text>
 <text x="293" y="1065.0440918351974" font-size="12.5" fill="#777">the optional engine and its runtime</text>
-<text x="1578" y="1065.0440918351974" font-size="12.5" font-weight="bold" fill="#666" text-anchor="end">11.8% · 6 issues · 2 blocker · 1 major · 3 minor</text>
+<text x="1578" y="1065.0440918351974" font-size="12.5" font-weight="bold" fill="#666" text-anchor="end">11.8% · 6 issues · 1 blocker · 1 major · 3 minor · 1 fixed</text>
 <rect x="22" y="1078.0440918351974" width="1556" height="175" fill="#efefef"/>
 <rect x="22.5" y="1078.5" width="408.5" height="173.8" fill="#c62828" stroke="#ffffff" stroke-width="1"/>
 <text x="226.7" y="1169.9" font-size="13.0" fill="#ffffff" text-anchor="middle">Any page fakes an extension</text>
-<rect x="432.0" y="1078.5" width="408.5" height="173.8" fill="#c62828" stroke="#ffffff" stroke-width="1"/>
-<text x="636.2" y="1169.9" font-size="13.0" fill="#ffffff" text-anchor="middle">Off-thread callbacks + evals race</text>
+<rect x="432.0" y="1078.5" width="408.5" height="173.8" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="636.2" y="1169.9" font-size="13.0" fill="#ffffff" text-anchor="middle">Callbacks marshalled (fixed)</text>
 <rect x="841.4" y="1078.5" width="244.7" height="173.8" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
 <text x="963.8" y="1169.9" font-size="13.0" fill="#241100" text-anchor="middle">Weak loopback origin checks</text>
 <rect x="1087.1" y="1078.5" width="162.8" height="173.8" fill="#d9b40a" stroke="#ffffff" stroke-width="1"/>
@@ -123,32 +123,32 @@
 <text x="1496.1" y="1168.5" font-size="9.0" fill="#241f00" text-anchor="middle">Find/print/PiP/passwords stubs</text>
 <text x="22" y="1304.8393412452922" font-size="17.5" font-weight="bold" fill="#111">Performance (the lag)</text>
 <text x="244" y="1303.8393412452922" font-size="12.5" fill="#777">render churn, memory, freezing</text>
-<text x="1578" y="1303.8393412452922" font-size="12.5" font-weight="bold" fill="#666" text-anchor="end">13.0% · 8 issues · 5 major · 3 minor</text>
+<text x="1578" y="1303.8393412452922" font-size="12.5" font-weight="bold" fill="#666" text-anchor="end">13.0% · 8 issues · 4 major · 2 minor · 2 fixed</text>
 <rect x="22" y="1316.8393412452922" width="1556" height="186" fill="#efefef"/>
 <rect x="22.5" y="1317.3" width="221.3" height="185.0" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
 <text x="133.1" y="1414.3" font-size="13.0" fill="#241100" text-anchor="middle">Strip rebuilt per event</text>
 <rect x="244.8" y="1317.3" width="221.3" height="185.0" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
 <text x="355.4" y="1414.3" font-size="13.0" fill="#241100" text-anchor="middle">One WebView2 per tab</text>
-<rect x="467.1" y="1317.3" width="221.3" height="185.0" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
-<text x="577.7" y="1414.3" font-size="13.0" fill="#241100" text-anchor="middle">Re-freeze GC every 10 s</text>
+<rect x="467.1" y="1317.3" width="221.3" height="185.0" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="577.7" y="1414.3" font-size="13.0" fill="#ffffff" text-anchor="middle">Freeze once (fixed)</text>
 <rect x="689.4" y="1317.3" width="221.3" height="185.0" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
 <text x="800.0" y="1414.1" font-size="12.6" fill="#241100" text-anchor="middle">ShowSelected touches all pages</text>
 <rect x="911.6" y="1317.3" width="221.3" height="185.0" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
 <text x="1022.3" y="1414.3" font-size="13.0" fill="#241100" text-anchor="middle">20k history written on UI</text>
-<rect x="1133.9" y="1317.3" width="147.2" height="185.0" fill="#d9b40a" stroke="#ffffff" stroke-width="1"/>
-<text x="1207.5" y="1413.4" font-size="10.6" fill="#241f00" text-anchor="middle">Blocking GC on minimise</text>
+<rect x="1133.9" y="1317.3" width="147.2" height="185.0" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="1207.5" y="1414.3" font-size="13.0" fill="#ffffff" text-anchor="middle">Non-blocking GC</text>
 <rect x="1282.1" y="1317.3" width="147.2" height="185.0" fill="#d9b40a" stroke="#ffffff" stroke-width="1"/>
 <text x="1355.7" y="1413.4" font-size="10.6" fill="#241f00" text-anchor="middle">Profile per fresh space</text>
 <rect x="1430.3" y="1317.3" width="147.2" height="185.0" fill="#d9b40a" stroke="#ffffff" stroke-width="1"/>
 <text x="1503.9" y="1413.0" font-size="9.4" fill="#241f00" text-anchor="middle">Low-end mode may cause lag</text>
 <text x="22" y="1554.8245280802914" font-size="17.5" font-weight="bold" fill="#111">Lifecycle &amp; data</text>
 <text x="194" y="1553.8245280802914" font-size="12.5" fill="#777">startup, pipes, profiles, persistence</text>
-<text x="1578" y="1553.8245280802914" font-size="12.5" font-weight="bold" fill="#666" text-anchor="end">8.7% · 5 issues · 4 major · 1 minor</text>
+<text x="1578" y="1553.8245280802914" font-size="12.5" font-weight="bold" fill="#666" text-anchor="end">8.7% · 5 issues · 2 major · 1 minor · 2 fixed</text>
 <rect x="22" y="1566.8245280802914" width="1556" height="145" fill="#efefef"/>
-<rect x="22.5" y="1567.3" width="332.4" height="143.6" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
-<text x="188.7" y="1643.6" font-size="13.0" fill="#241100" text-anchor="middle">Page init failures silent</text>
-<rect x="355.9" y="1567.3" width="332.4" height="143.6" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
-<text x="522.1" y="1643.6" font-size="13.0" fill="#241100" text-anchor="middle">Links dropped at startup</text>
+<rect x="22.5" y="1567.3" width="332.4" height="143.6" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="188.7" y="1643.6" font-size="13.0" fill="#ffffff" text-anchor="middle">Init failures visible</text>
+<rect x="355.9" y="1567.3" width="332.4" height="143.6" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="522.1" y="1643.6" font-size="13.0" fill="#ffffff" text-anchor="middle">Startup links queued</text>
 <rect x="689.4" y="1567.3" width="332.4" height="143.6" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
 <text x="855.6" y="1643.6" font-size="13.0" fill="#241100" text-anchor="middle">No job object; orphans</text>
 <rect x="1022.8" y="1567.3" width="332.4" height="143.6" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
@@ -157,10 +157,10 @@
 <text x="1466.9" y="1643.6" font-size="13.0" fill="#241f00" text-anchor="middle">Pipe shared across profiles</text>
 <text x="22" y="1763.468978171733" font-size="17.5" font-weight="bold" fill="#111">Build, CI &amp; packaging</text>
 <text x="244" y="1762.468978171733" font-size="12.5" fill="#777">branch, tests, artefacts</text>
-<text x="1578" y="1762.468978171733" font-size="12.5" font-weight="bold" fill="#666" text-anchor="end">10.3% · 8 issues · 1 major · 6 minor · 1 info</text>
+<text x="1578" y="1762.468978171733" font-size="12.5" font-weight="bold" fill="#666" text-anchor="end">10.3% · 8 issues · 6 minor · 1 info · 1 fixed</text>
 <rect x="22" y="1775.468978171733" width="1556" height="161" fill="#efefef"/>
-<rect x="22.5" y="1776.0" width="280.2" height="159.8" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
-<text x="162.6" y="1860.3" font-size="13.0" fill="#241100" text-anchor="middle">Bench green when broken</text>
+<rect x="22.5" y="1776.0" width="280.2" height="159.8" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="162.6" y="1860.3" font-size="13.0" fill="#ffffff" text-anchor="middle">Bench gates WebView2</text>
 <rect x="303.7" y="1776.0" width="186.5" height="159.8" fill="#d9b40a" stroke="#ffffff" stroke-width="1"/>
 <text x="396.9" y="1859.6" font-size="11.0" fill="#241f00" text-anchor="middle">No WebKit checksum/validation</text>
 <rect x="491.2" y="1776.0" width="186.5" height="159.8" fill="#d9b40a" stroke="#ffffff" stroke-width="1"/>
@@ -191,20 +191,20 @@
 <text x="254" y="2151.0" font-size="12.5" fill="#777">by user impact — not severity</text>
 <rect x="22" y="2164.0" width="1556" height="120" fill="#ececec"/>
 <rect x="22.5" y="2164.5" width="193.5" height="119.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="119.2" y="2227.7" font-size="11.0" fill="#ffffff" text-anchor="middle">1. Globalization fix + UI test</text>
+<text x="119.2" y="2228.4" font-size="13.0" fill="#ffffff" text-anchor="middle">1. WebKit extension trust</text>
 <rect x="217.0" y="2164.5" width="193.5" height="119.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="313.8" y="2228.4" font-size="13.0" fill="#ffffff" text-anchor="middle">2. WebKit extension trust</text>
+<text x="313.8" y="2228.4" font-size="13.0" fill="#ffffff" text-anchor="middle">2. CRX3 verification</text>
 <rect x="411.5" y="2164.5" width="193.5" height="119.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="508.2" y="2228.4" font-size="13.0" fill="#ffffff" text-anchor="middle">3. WebKit thread safety</text>
+<text x="508.2" y="2228.4" font-size="13.0" fill="#ffffff" text-anchor="middle">3. Incremental render</text>
 <rect x="606.0" y="2164.5" width="193.5" height="119.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="702.8" y="2228.4" font-size="13.0" fill="#ffffff" text-anchor="middle">4. Page key bridge</text>
+<text x="702.8" y="2228.0" font-size="11.8" fill="#ffffff" text-anchor="middle">4. History off the UI thread</text>
 <rect x="800.5" y="2164.5" width="193.5" height="119.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="897.2" y="2228.4" font-size="13.0" fill="#ffffff" text-anchor="middle">5. Field in top layout</text>
+<text x="897.2" y="2228.4" font-size="13.0" fill="#ffffff" text-anchor="middle">5. ShowSelected diff</text>
 <rect x="995.0" y="2164.5" width="193.5" height="119.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="1091.8" y="2228.4" font-size="13.0" fill="#ffffff" text-anchor="middle">6. Private-tab leak</text>
+<text x="1091.8" y="2228.4" font-size="13.0" fill="#ffffff" text-anchor="middle">6. Job objects + profiles</text>
 <rect x="1189.5" y="2164.5" width="193.5" height="119.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="1286.2" y="2227.7" font-size="11.0" fill="#ffffff" text-anchor="middle">7. Incremental render + freeze</text>
+<text x="1286.2" y="2228.4" font-size="13.0" fill="#ffffff" text-anchor="middle">7. Focusable controls</text>
 <rect x="1384.0" y="2164.5" width="193.5" height="119.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="1480.8" y="2228.4" font-size="13.0" fill="#ffffff" text-anchor="middle">8. Verify CRX3</text>
+<text x="1480.8" y="2228.4" font-size="13.0" fill="#ffffff" text-anchor="middle">8. UI integration tests</text>
 <text x="800.0" y="2314" font-size="12" fill="#777" text-anchor="middle">audited by reading every source file, building, running 83 tests, and driving the app · 2026-11-21</text>
 </svg>

@@ -15,8 +15,8 @@ being established.
 
 ![AERIE code audit treemap](docs/windows-port-audit.svg)
 
-*Audit of the current prototype — 63 findings: 4 blockers, 24 major, 30 minor.
-Tiles are coloured by severity and sized by impact; the full map is
+*Audit of the current prototype — 63 findings: 18 fixed, 2 blockers, 16 major,
+23 minor. Tiles are coloured by severity and sized by impact; the full map is
 [docs/windows-port-audit.svg](docs/windows-port-audit.svg).*
 
 ## What works today
@@ -30,20 +30,37 @@ Tiles are coloured by severity and sized by impact; the full map is
 
 ## Known blockers
 
-From the audit, in order of impact:
+The audit found 63 issues; this batch fixes 18 of them. **Two blockers remain:**
 
-1. **Page-focused shortcuts do not reach the browser** — Ctrl+L/T/W/K/R only
-   work while the chrome has focus (no `AcceleratorKeyPressed` bridge).
-2. **CRX3 signatures are never verified** — an altered extension package would
+1. **CRX3 signatures are never verified** — an altered extension package would
    be accepted.
-3. **WebKit: any page can impersonate an extension** — its runtime trusts a
+2. **WebKit: any page can impersonate an extension** — its runtime trusts a
    client-supplied extension id.
-4. **WebKit: callbacks off the UI thread still execute** — and the eval map is
-   not thread-safe.
 
-The typing bug that made every text box read-only (`InvariantGlobalization`)
-was found, fixed and verified in this tree — type `example.com`, the page
-loads, history is written, and `errors.log` stays empty.
+Fixed in this batch, each verified against the running build:
+
+- **Typing** — `InvariantGlobalization` made every WPF text box read-only.
+- **Page-focused shortcuts** — Ctrl+L/T/W/K/R, Ctrl+Tab, F5, F6 and Alt+arrows
+  now reach the window through an injected key bridge.
+- **Top-tabs layout** — it had no address field at all; it does now.
+- **Private tabs** — the omnibox no longer shows history or completions there.
+- **Focus** — selecting a tab or dismissing a sheet no longer steals focus from
+  an open panel.
+- **Small input fixes** — the placeholder no longer covers a filled URL, typing
+  in the empty state opens the field, Tab walks the suggestions, a bad custom
+  engine no longer crashes, and horizontal wheel scrolling over the tabs works.
+- **WebKit** — callbacks are marshalled to the UI thread and the eval map is
+  concurrent.
+- **Performance** — background tabs are frozen once per rest instead of every
+  10 seconds (the WebKit GC storm), and minimise no longer runs a blocking GC.
+- **Lifecycle** — page-init failures are visible, links arriving during startup
+  are queued, and DevTools are off in release unless enabled in settings.
+- **CI** — the benchmark job now fails when the WebView2 run crashes or writes
+  no report, and the WebKit archive is checked for `WebKit2.dll`.
+
+The remaining blockers need a decision (CRX3 verification, and whether to keep,
+fix or disable the WebKit extension host), so they are deliberately left for
+the next discussion.
 
 ## Building
 

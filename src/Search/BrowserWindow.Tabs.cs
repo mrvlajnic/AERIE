@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.Text.Json;
 using System.Windows;
+using System.Windows.Input;
 using Search.Core;
 
 namespace Search;
@@ -8,6 +9,8 @@ namespace Search;
 sealed partial class BrowserWindow
 {
     readonly Stack<(SavedTab Tab, Space Space, int Index)> closed = new();
+    /// Links handed over before the engine finished starting.
+    readonly List<string[]> earlyArrivals = new();
     public IEngine Engine { get; private set; } = null!;
     public Bench? Bench { get; private set; }
 
@@ -19,7 +22,7 @@ sealed partial class BrowserWindow
     {
         if (t.Space != Space) SwitchSpace(t.Space, wake: false);
         var prev = Space.Selected;
-        if (prev == t && t.Awake && !force) { t.Page!.Focus(); return; }
+        if (prev == t && t.Awake && !force) { if (!Sheet.AnyOpen) t.Page!.Focus(); return; }
         if (prev != null && prev != t && prev.Awake)
         {
             prev.Seen = DateTime.Now;
@@ -32,7 +35,7 @@ sealed partial class BrowserWindow
         ShowSelected();
         Render();
         SaveSoon();
-        t.Page?.Focus();
+        if (!Sheet.AnyOpen) t.Page?.Focus();
     }
 
     /// Exactly one page shows: the space's selected tab. The rest are hidden
@@ -46,6 +49,7 @@ sealed partial class BrowserWindow
             bool show = t == sel;
             bool was = page.Element.Visibility == Visibility.Visible;
             page.SetShown(show);
+            if (show) t.Frozen = false;
             if (was && !show) t.Left = DateTime.Now;
         }
         empty.Visibility = sel == null ? Visibility.Visible : Visibility.Collapsed;
@@ -57,6 +61,7 @@ sealed partial class BrowserWindow
         if (t.Awake) return;
         var page = adopted ?? Engine.Create(new PageOwner(t.Space.Profile, t.Private, t));
         t.Page = page;
+        t.Frozen = false;
         page.SetShown(t == Space.Selected);
         Pages.Children.Add(page.Element);
         Wire(t, page);
@@ -86,7 +91,12 @@ sealed partial class BrowserWindow
             if (!t.Awake || t == Current || t.Audible) continue;
             var away = now - (t.Left > t.Seen ? t.Left : t.Seen);
             if (Settings.SleepMinutes > 0 && away > TimeSpan.FromMinutes(Settings.SleepMinutes)) { Sleep(t); continue; }
-            if (Settings.FreezeSeconds > 0 && away > TimeSpan.FromSeconds(Settings.FreezeSeconds)) _ = t.Page!.Freeze();
+            // Once per rest: Freeze is expensive on WebKit (context GC + caches).
+            if (Settings.FreezeSeconds > 0 && away > TimeSpan.FromSeconds(Settings.FreezeSeconds) && !t.Frozen)
+            {
+                t.Frozen = true;
+                _ = t.Page!.Freeze();
+            }
         }
     }
 
@@ -95,8 +105,8 @@ sealed partial class BrowserWindow
     {
         foreach (var t in Spaces.SelectMany(s => s.All).ToList())
             if (t.Page is { } p && !t.Audible && t != Current) await p.Freeze();
-        System.Runtime.GCSettings.LargeObjectHeapCompactionMode = System.Runtime.GCLargeObjectHeapCompactionMode.CompactOnce;
-        GC.Collect(GC.MaxGeneration, GCCollectionMode.Aggressive, blocking: true, compacting: true);
+        // Hand memory back without freezing the UI thread mid-minimise.
+        GC.Collect(GC.MaxGeneration, GCCollectionMode.Optimized, blocking: false, compacting: false);
     }
 
     // The page's own events ---------------------------------------------------
@@ -160,9 +170,33 @@ sealed partial class BrowserWindow
             }
             else if (kind == "hiding" && root.GetProperty("on").GetBoolean() && t == Current)
                 Toast("Click something to hide it on " + Address.WithoutWww(t.Host));
+            else if (kind == "key")
+            {
+                // A shortcut pressed inside the page: WebView2's WPF control has
+                // no accelerator event, so the page posts a whitelist instead.
+                var name = root.GetProperty("key").GetString() ?? "";
+                bool ctrl = root.TryGetProperty("ctrl", out var c) && c.GetBoolean();
+                bool shift = root.TryGetProperty("shift", out var s) && s.GetBoolean();
+                bool alt = root.TryGetProperty("alt", out var a) && a.GetBoolean();
+                if (KeyFor(name) is { } key) Run(key, ctrl, shift, alt);
+            }
         }
         catch { }
     }
+
+    static Key? KeyFor(string name) => name.ToLowerInvariant() switch
+    {
+        "t" => Key.T, "n" => Key.N, "l" => Key.L, "w" => Key.W, "k" => Key.K,
+        "s" => Key.S, "r" => Key.R, "d" => Key.D, "h" => Key.H, "y" => Key.Y,
+        "c" => Key.C, "i" => Key.I, "p" => Key.P, "u" => Key.U,
+        "," => Key.OemComma, "[" => Key.OemOpenBrackets, "]" => Key.OemCloseBrackets,
+        "1" => Key.D1, "2" => Key.D2, "3" => Key.D3, "4" => Key.D4, "5" => Key.D5,
+        "6" => Key.D6, "7" => Key.D7, "8" => Key.D8, "9" => Key.D9,
+        "tab" => Key.Tab, "pagedown" => Key.PageDown, "pageup" => Key.PageUp,
+        "arrowleft" => Key.Left, "arrowright" => Key.Right, "home" => Key.Home,
+        "f5" => Key.F5, "f6" => Key.F6, "f11" => Key.F11,
+        _ => null,
+    };
 
     /// The scripts every page runs before its document: what you have hidden.
     IEnumerable<string> DocumentScripts() { yield return Hidden.Script(); }
@@ -229,7 +263,7 @@ sealed partial class BrowserWindow
     /// Addresses handed over by Windows: a link clicked in another app.
     public void Arrived(string[] lines, bool activate = true)
     {
-        if (!Started) return;
+        if (!Started) { lock (earlyArrivals) earlyArrivals.Add(lines); return; }
         Tab? last = null;
         foreach (var raw in lines)
         {

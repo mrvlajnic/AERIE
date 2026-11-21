@@ -29,7 +29,7 @@ sealed partial class BrowserWindow
             switch (key)
             {
                 case Key.T: case Key.N: OpenOmnibox(newTab: true); return true;
-                case Key.L: OpenOmnibox(newTab: Current == null); return true;
+                case Key.L: OpenOmnibox(newTab: Current == null, priv: Current?.Private == true); return true;
                 case Key.W: case Key.F4: if (Current != null) Close(Current); return true;
                 case Key.K: ShowSwitcher(); return true;
                 case Key.S: ToggleFold(); return true;
@@ -76,7 +76,7 @@ sealed partial class BrowserWindow
             {
                 case Key.Left: Back(); return true;
                 case Key.Right: Forward(); return true;
-                case Key.D: OpenOmnibox(newTab: Current == null); return true;
+                case Key.D: OpenOmnibox(newTab: Current == null, priv: Current?.Private == true); return true;
                 case Key.Home: if (Current?.Pinned == true) Navigate(Current, Current.Home!); return true;
             }
         }
@@ -120,7 +120,7 @@ sealed partial class BrowserWindow
 
     // Panels -------------------------------------------------------------------
 
-    public void OpenOmnibox(bool newTab, bool priv = false) => new Omnibox(this, newTab, priv).Present();
+    public void OpenOmnibox(bool newTab, bool priv = false, string? seed = null) => new Omnibox(this, newTab, priv, seed).Present();
     void ShowSwitcher() => new Switcher(this).Present();
     void ShowHistory() => new HistoryPanel(this).Present();
     void ShowHidden() { if (Current?.Host.Length > 0) new HiddenPanel(this, Current.Host).Present(); }

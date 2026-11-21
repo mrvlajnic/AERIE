@@ -27,7 +27,8 @@
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
     <RetainVMGarbageCollection>false</RetainVMGarbageCollection>
     <TieredPGO>false</TieredPGO>
-    <UseSystemResourceKeys>true</UseSystemResourceKeys>
+    <!-- Readable exception messages in Debug; trimmed keys only in Release. -->
+    <UseSystemResourceKeys Condition="'$(Configuration)' != 'Debug'">true</UseSystemResourceKeys>
     <!-- One file to hand out: the WebView2 loader rides inside the exe. -->
     <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
     <AllowedReferenceRelatedFileExtensions>.pdb</AllowedReferenceRelatedFileExtensions>

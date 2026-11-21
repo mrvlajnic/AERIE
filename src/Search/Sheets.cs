@@ -11,6 +11,11 @@ namespace Search;
 /// above the page (which is a window of its own) and take the keyboard.
 abstract class Sheet : Window
 {
+    /// The sheet that is open, if any: the window must not pull focus back to
+    /// the page while one is up, or it deactivates and dismisses itself.
+    static Sheet? active;
+    public static bool AnyOpen => active != null;
+
     protected readonly BrowserWindow Browser;
     readonly double width;
     bool closing;
@@ -30,6 +35,7 @@ abstract class Sheet : Window
         UseLayoutRounding = true;
         TextOptions.SetTextFormattingMode(this, TextFormattingMode.Display);
         Deactivated += (_, _) => Dismiss();
+        Closed += (_, _) => { if (active == this) active = null; };
         PreviewKeyDown += (_, e) => { if (e.Key == Key.Escape) { e.Handled = true; Dismiss(); } };
     }
 
@@ -40,9 +46,10 @@ abstract class Sheet : Window
         Content = Ui.Card(Build());
         var at = Browser.Anchor(width + 36);
         Left = at.X; Top = at.Y - 18;
+        active = this;
+        // Wait for Loaded: focusing before the window has laid out can be lost.
+        Loaded += (_, _) => { Activate(); Focused()?.Focus(); };
         Show();
-        Activate();
-        Focused()?.Focus();
     }
 
     protected virtual IInputElement? Focused() => null;
@@ -53,7 +60,12 @@ abstract class Sheet : Window
     {
         if (closing) return;
         closing = true;
-        Dispatcher.BeginInvoke(() => { try { Close(); } catch { } Browser.Current?.Page?.Focus(); });
+        Dispatcher.BeginInvoke(() =>
+        {
+            try { Close(); } catch { }
+            // Only hand focus back when nothing else took it.
+            if (!AnyOpen && Browser.IsActive) Browser.Current?.Page?.Focus();
+        });
     }
 
     /// A row in a list: an icon, a title, a line under it; grey when chosen.
@@ -86,7 +98,7 @@ abstract class Sheet : Window
 /// addresses from your own history, and sends nothing anywhere until Enter.
 sealed class Omnibox : Sheet
 {
-    readonly bool newTab, priv;
+    readonly bool newTab, priv, seeded;
     readonly TextBox box = Ui.Field("", 16);
     readonly StackPanel list = new();
     readonly List<(UIElement Icon, string Title, string? Sub, Action Go)> rows = new();
@@ -94,18 +106,26 @@ sealed class Omnibox : Sheet
     string typed = "";
     bool quiet;
 
-    public Omnibox(BrowserWindow owner, bool newTab, bool priv) : base(owner, 600)
+    public Omnibox(BrowserWindow owner, bool newTab, bool priv, string? seed = null) : base(owner, 600)
     {
         this.newTab = newTab; this.priv = priv;
+        seeded = seed != null;
         var here = owner.Current;
-        if (!newTab && here != null && Uri.TryCreate(here.Url, UriKind.Absolute, out var u) && here.Url != "about:blank")
+        if (seed != null)
+            box.Text = seed;
+        else if (!newTab && here != null && Uri.TryCreate(here.Url, UriKind.Absolute, out var u) && here.Url != "about:blank")
             box.Text = Address.Editable(u);
         typed = box.Text;
         box.TextChanged += (_, _) => Changed();
         box.PreviewKeyDown += Keys;
     }
 
-    protected override IInputElement Focused() { box.SelectAll(); return box; }
+    protected override IInputElement Focused()
+    {
+        // Typed into the empty state: the caret belongs after the character.
+        if (seeded) box.CaretIndex = box.Text.Length; else box.SelectAll();
+        return box;
+    }
 
     protected override UIElement Build()
     {
@@ -156,8 +176,11 @@ sealed class Omnibox : Sheet
             var asAddress = Address.File(text) ?? Address.Url(text);
             if (asAddress != null)
                 rows.Add((Ui.Icon(Ui.Glyph.Globe, 13), text, "Go to this address", () => Commit(text)));
-            var words = asAddress != null && bare.Length > 0 && bare != text ? bare : text;
-            rows.Add((Ui.Icon(Ui.Glyph.Search, 13), words, "Search " + engine, () => Commit(Engine.Url(words, Browser.SearchTemplate)!.AbsoluteUri)));
+            // Search what was typed, not the appended completion. A bad custom
+            // template returns null: fall back to Resolve instead of crashing.
+            var words = bare.Length > 0 && bare != text ? bare : text;
+            var searchUrl = Engine.Url(words, Browser.SearchTemplate)?.AbsoluteUri ?? Browser.Resolve(words);
+            rows.Add((Ui.Icon(Ui.Glyph.Search, 13), words, "Search " + engine, () => Commit(searchUrl)));
 
             if (!priv)
             {
@@ -211,7 +234,15 @@ sealed class Omnibox : Sheet
                 if (rows.Count > 0) rows[Math.Clamp(chosen, 0, rows.Count - 1)].Go();
                 break;
             case Key.Tab:
-                if (box.SelectionLength > 0) { box.CaretIndex = box.Text.Length; typed = box.Text; e.Handled = true; }
+                // Tab belongs to the field: accept a completion, or walk the rows.
+                e.Handled = true;
+                if (box.SelectionLength > 0) { box.CaretIndex = box.Text.Length; typed = box.Text; }
+                else if (rows.Count > 0)
+                {
+                    int step = Keyboard.Modifiers.HasFlag(ModifierKeys.Shift) ? -1 : 1;
+                    chosen = (chosen + step + rows.Count) % rows.Count;
+                    Fill();
+                }
                 break;
             case Key.Back: case Key.Delete:
                 if (box.SelectionLength > 0 && box.SelectionStart + box.SelectionLength == box.Text.Length && box.SelectionStart == typed.Length)

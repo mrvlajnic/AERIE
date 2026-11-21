@@ -33,8 +33,19 @@ static class Program
         var app = new Application { ShutdownMode = ShutdownMode.OnMainWindowClose };
         app.DispatcherUnhandledException += (_, e) =>
         {
-            File.AppendAllText(Path.Combine(Store.Folder, "errors.log"), $"{DateTime.Now:u} {e.Exception}\n\n");
+            try
+            {
+                var log = Path.Combine(Store.Folder, "errors.log");
+                // Bound the log: a failing paint loop must not fill the disk.
+                if (File.Exists(log) && new FileInfo(log).Length > 1_000_000) File.Move(log, log + ".old", true);
+                File.AppendAllText(log, $"{DateTime.Now:u} {e.Exception}\n\n");
+            }
+            catch { }
             e.Handled = true;
+            try { (Application.Current?.MainWindow as BrowserWindow)?.Toast("Something went wrong — details in errors.log"); } catch { }
+#if DEBUG
+            System.Diagnostics.Debugger.Break();
+#endif
         };
         var window = new BrowserWindow(args);
         Listen(window);

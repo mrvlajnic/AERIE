@@ -93,6 +93,7 @@ sealed partial class BrowserWindow : Window
         Loaded += async (_, _) => await Start();
         Closing += (_, _) => SaveAll();
         PreviewKeyDown += OnKey;
+        PreviewTextInput += OnTypedCharacter;
         MouseDown += (_, e) =>
         {
             if (e.ChangedButton == MouseButton.XButton1) Back();
@@ -134,7 +135,9 @@ sealed partial class BrowserWindow : Window
         if (Spaces.Count == 0) Spaces.Add(new Space { Name = "Home" });
         Space = Spaces[Math.Clamp(saved.Current, 0, Spaces.Count - 1)];
         Started = true;
-
+        string[][] queued;
+        lock (earlyArrivals) { queued = earlyArrivals.ToArray(); earlyArrivals.Clear(); }
+        foreach (var lines in queued) Arrived(lines, activate: false);
         Arrived(startArgs, activate: false);
         if (Space.Selected == null && Space.All.Any()) Space.Selected = Space.All.First();
         if (Space.Selected is { } sel) await Select(sel, force: true);
@@ -291,7 +294,7 @@ sealed partial class BrowserWindow : Window
         return p;
     }
 
-    UIElement AddressChip()
+    Border AddressChip()
     {
         var sel = Space.Selected;
         string text = "Search or enter address";
@@ -319,7 +322,7 @@ sealed partial class BrowserWindow : Window
             d.Children.Add(dot);
         }
         d.Children.Add(label);
-        return Ui.Button(d, () => OpenOmnibox(newTab: sel == null), "Ctrl+L", new Thickness(2, 3, 6, 3), rest: Theme.SideTile, hover: Theme.SideHover, radius: 8);
+        return Ui.Button(d, () => OpenOmnibox(newTab: sel == null, priv: sel?.Private == true), "Ctrl+L", new Thickness(2, 3, 6, 3), rest: Theme.SideTile, hover: Theme.SideHover, radius: 8);
     }
 
     UIElement Footer()
@@ -361,14 +364,24 @@ sealed partial class BrowserWindow : Window
     {
         strip.Background = Theme.Frame;
         var grid = new Grid { Margin = new Thickness(6, 6, 6, 4) };
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
-        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });                 // pins
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });                 // field
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) }); // tabs
+        grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });                 // buttons
 
         var pins = new StackPanel { Orientation = Orientation.Horizontal };
         foreach (var p in Space.Pins) pins.Children.Add(PinTile(p, 30));
         AllowPinDrop(pins);
         grid.Children.Add(pins);
+
+        // The field belongs in this layout too: without it the only ways to
+        // search were the +, the selected tab, or shortcuts that do not reach
+        // the window while a page has focus.
+        var address = AddressChip();
+        address.Width = 250;
+        address.Margin = new Thickness(6, 0, 8, 0);
+        Grid.SetColumn(address, 1);
+        grid.Children.Add(address);
 
         var right = new StackPanel { Orientation = Orientation.Horizontal };
         right.Children.Add(Ui.IconButton(Ui.Glyph.Add, () => OpenOmnibox(newTab: true), "New Tab (Ctrl+T)", 11, Theme.SideHover));
@@ -376,11 +389,11 @@ sealed partial class BrowserWindow : Window
         right.Children.Add(Ui.IconButton(Ui.Glyph.Add, NewSpace, "New space", 9, Theme.SideHover));
         right.Children.Add(Ui.IconButton(Ui.Glyph.Puzzle, ShowExtensions, "Extensions", 12, Theme.SideHover));
         right.Children.Add(Ui.IconButton(Ui.Glyph.Settings, ShowSettings, "Settings (Ctrl+,)", 12, Theme.SideHover));
-        Grid.SetColumn(right, 2);
+        Grid.SetColumn(right, 3);
         grid.Children.Add(right);
 
         var tabs = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(4, 0, 4, 0) };
-        double room = Math.Max(200, ActualWidth - 60 - Space.Pins.Count * 34 - (Spaces.Count + 3) * 30);
+        double room = Math.Max(200, ActualWidth - 330 - Space.Pins.Count * 34 - (Spaces.Count + 3) * 30);
         double each = Space.Tabs.Count == 0 ? 0 : Math.Clamp(room / Space.Tabs.Count, 72, 230);
         foreach (var t in Space.Tabs)
         {
@@ -394,7 +407,7 @@ sealed partial class BrowserWindow : Window
             Content = tabs, HorizontalScrollBarVisibility = ScrollBarVisibility.Hidden,
             VerticalScrollBarVisibility = ScrollBarVisibility.Disabled, Focusable = false,
         };
-        Grid.SetColumn(scroller, 1);
+        Grid.SetColumn(scroller, 2);
         grid.Children.Add(scroller);
         strip.Child = grid;
     }
@@ -627,6 +640,17 @@ sealed partial class BrowserWindow : Window
         return new Point(topLeft.X + (target.ActualWidth - width) / 2, topLeft.Y + 40);
     }
 
+    /// The empty state invites typing; with no sheet open those keys went
+    /// nowhere. Open the field with the first character already in it.
+    void OnTypedCharacter(object sender, TextCompositionEventArgs e)
+    {
+        if (!Started || Sheet.AnyOpen) return;
+        if (Keyboard.FocusedElement is TextBoxBase) return;
+        if (string.IsNullOrEmpty(e.Text) || e.Text.Any(char.IsControl)) return;
+        e.Handled = true;
+        OpenOmnibox(newTab: Current == null, priv: Current?.Private == true, seed: e.Text);
+    }
+
     IntPtr Hook(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
     {
         // Two fingers sideways on a touchpad, over the tabs: the next space.
@@ -641,8 +665,8 @@ sealed partial class BrowserWindow : Window
                 int step = swipe > 0 ? 1 : -1;
                 swipe = -step * 100000; // one space per gesture
                 Dispatcher.BeginInvoke(() => StepSpace(step, offerNew: true));
+                handled = true;   // only swallow the wheel when a space changes
             }
-            handled = true;
         }
         return IntPtr.Zero;
     }

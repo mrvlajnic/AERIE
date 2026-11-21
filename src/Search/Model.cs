@@ -25,6 +25,9 @@ sealed class Tab
     public DateTime Seen { get; set; } = DateTime.Now;
     /// When it was last hidden: frozen a little after.
     public DateTime Left { get; set; } = DateTime.Now;
+    /// Already sent to Freeze(); set once per rest so the sleep timer does not
+    /// repeat a context-wide GC and cache purge every tick.
+    public bool Frozen { get; set; }
     public IPage? Page { get; set; }
     public bool Awake => Page != null;
 

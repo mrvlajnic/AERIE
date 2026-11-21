@@ -60,6 +60,8 @@ public sealed class Settings
     public bool SharedProcess { get; set; }
     public bool FloatOnLeave { get; set; }
     public bool SavePasswords { get; set; } = true;
+    /// WebView2 DevTools (F12). Off by default; a debugger attach still enables them.
+    public bool DevTools { get; set; }
     public bool SpaceSwipe { get; set; } = true;
     public double Width { get; set; } = 1280;
     public double Height { get; set; } = 820;

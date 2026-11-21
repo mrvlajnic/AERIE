@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Net.Http;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
@@ -75,9 +76,18 @@ sealed class WebKitPage : IPage
     /// instead, along with any callback that arrives off the UI thread.
     static void Safe(string where, Action act)
     {
-        if (uiThread == 0) uiThread = Application.Current.Dispatcher.Thread.ManagedThreadId;
+        var app = Application.Current;
+        if (app == null) return;
+        if (uiThread == 0) uiThread = app.Dispatcher.Thread.ManagedThreadId;
+        if (Environment.CurrentManagedThreadId != uiThread)
+        {
+            // WebKit may call back on its own threads. Touching WPF or the tab
+            // model there is a data race, so hop to the dispatcher and return.
+            Trace.Log("callback off the UI thread, marshalling: " + where);
+            app.Dispatcher.BeginInvoke(() => Safe(where, act));
+            return;
+        }
         Trace.Log("cb " + where);
-        if (Environment.CurrentManagedThreadId != uiThread) Trace.Log("callback off the UI thread: " + where);
         try { act(); }
         catch (Exception e)
         {
@@ -411,7 +421,7 @@ sealed class WebKitPage : IPage
     }
 
     static long nextEval;
-    static readonly Dictionary<long, TaskCompletionSource<string?>> evals = new();
+    static readonly ConcurrentDictionary<long, TaskCompletionSource<string?>> evals = new();
 
     /// Keyed by a number, not a handle: a late or repeated answer finds
     /// nothing and is dropped, rather than reaching freed memory.
@@ -420,7 +430,7 @@ sealed class WebKitPage : IPage
     {
         Safe("Evaluated", () =>
         {
-            if (!evals.Remove((long)context, out var done)) { Trace.Log("eval answer with no question"); return; }
+            if (!evals.TryRemove((long)context, out var done)) { Trace.Log("eval answer with no question"); return; }
             Trace.Log("page: eval done" + (error != IntPtr.Zero ? " with an error" : ""));
             done.TrySetResult(error != IntPtr.Zero ? null : WK.Text(result));
         });
@@ -439,7 +449,7 @@ sealed class WebKitPage : IPage
         // A page out of the window is throttled by WebKit: timers slowed,
         // layers let go, nothing drawn.
         if (view != IntPtr.Zero) WK.WKViewSetIsInWindow(view, on);
-        if (on) Focus();
+        // Focus is Select()'s job: doing it here stole the omnibox on every switch.
     }
 
     public Task Freeze()

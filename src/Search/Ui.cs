@@ -91,6 +91,8 @@ static class Ui
         var hint = Text(placeholder, box.FontSize, Theme.Muted);
         hint.Margin = new Thickness(4, 0, 0, 0);
         hint.IsHitTestVisible = false;
+        // The field may already hold an address when the panel is built.
+        hint.Visibility = box.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
         box.TextChanged += (_, _) => hint.Visibility = box.Text.Length == 0 ? Visibility.Visible : Visibility.Collapsed;
         var g = new Grid();
         g.Children.Add(hint);
