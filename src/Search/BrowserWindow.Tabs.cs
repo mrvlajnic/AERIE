@@ -167,6 +167,14 @@ sealed partial class BrowserWindow
         page.Finished += (url, title, ok) =>
         {
             if (ok && !t.Private) { History.Record(url, title, DateTime.Now); historyDirty = true; SaveSoon(); }
+            if (ok && !t.Private && Uri.TryCreate(url, UriKind.Absolute, out var done) && done.Host.Length > 0)
+            {
+                // A link can cross hosts: the script the document started with
+                // was for the old one, so apply this host's selectors now and
+                // refresh the script for the next document.
+                t.Page?.RefreshScripts();
+                _ = t.Page?.Eval(Hidden.Apply(done.Host));
+            }
             Bench?.Loaded(t);
         };
         page.Opened += (child, url, background) => OpenedBy(t, child, url, background);
@@ -235,7 +243,7 @@ sealed partial class BrowserWindow
     };
 
     /// The scripts every page runs before its document: what you have hidden.
-    IEnumerable<string> DocumentScripts() { yield return Hidden.Script(); }
+    IEnumerable<string> DocumentScripts(string host) { yield return Hidden.Script(host); }
 
     public async Task RefreshHidden()
     {

@@ -15,8 +15,8 @@ being established.
 
 ![AERIE code audit treemap](docs/windows-port-audit.svg)
 
-*Audit of the current prototype — 63 findings: **47 fixed (75%)**, no blockers,
-no majors, 12 minor. Section percentages show how much of each area is fixed.
+*Audit of the current prototype — 63 findings: **48 fixed (76%)**, no blockers,
+no majors, 11 minor. Section percentages show how much of each area is fixed.
 Tiles are coloured by severity and sized by impact; the full map is
 [docs/windows-port-audit.svg](docs/windows-port-audit.svg).*
 
@@ -31,7 +31,7 @@ Tiles are coloured by severity and sized by impact; the full map is
 
 ## Known issues
 
-The audit found 63 issues; **47 are fixed (75%), with no blockers and no majors
+The audit found 63 issues; **48 are fixed (76%), with no blockers and no majors
 left.**
 
 The largest remaining items:
@@ -79,6 +79,8 @@ Fixed in this batch, each verified against the running build:
 - **History** — URL identity dedupes fragments and strips credentials; ranking
   is match quality × log(2 + frecency); one letter finishes a front door; a
   typo within one edit still finds the page.
+- **Hidden elements** — a document receives only its own host's selectors; a
+  cross-host link gets the new host's CSS once it commits.
 - **Memory** — at most **10** background pages stay awake (`maxAwakeTabs` in
   settings.json), least-recently-used first, and Windows' low-memory signal
   sleeps three more. Per-tab controllers remain, but what stays resident is

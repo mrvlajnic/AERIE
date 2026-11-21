@@ -17,7 +17,7 @@ sealed class WebView2Engine : IEngine
     public string Name => "WebView2";
     public CoreWebView2Environment Env { get; private set; } = null!;
     public BrowserWindow Browser { get; private set; } = null!;
-    public Func<IEnumerable<string>> DocumentScripts { get; set; } = () => Array.Empty<string>();
+    public Func<string, IEnumerable<string>> DocumentScripts { get; set; } = _ => Array.Empty<string>();
     public IExtensionHost Extensions { get; }
     readonly Dictionary<string, CoreWebView2Profile> profiles = new();
     readonly HashSet<string> synced = new();
@@ -292,7 +292,12 @@ sealed class WebView2Page : IPage
         if (Core is not { } core) return;
         foreach (var id in scriptIds) core.RemoveScriptToExecuteOnDocumentCreated(id);
         scriptIds.Clear();
-        foreach (var s in engine.DocumentScripts()) scriptIds.Add(await core.AddScriptToExecuteOnDocumentCreatedAsync(s));
+        // The host this document will have: pending is set when Navigate ran
+        // before the controller existed, Url when it is already committed.
+        var target = pending ?? (Url.Length > 0 ? Url : owner.Tab?.Url ?? "");
+        var host = Uri.TryCreate(target, UriKind.Absolute, out var u) ? u.Host : "";
+        foreach (var s in engine.DocumentScripts(host))
+            if (!string.IsNullOrEmpty(s)) scriptIds.Add(await core.AddScriptToExecuteOnDocumentCreatedAsync(s));
     }
 
     public void RefreshScripts() => _ = AddScripts();
@@ -397,8 +402,15 @@ sealed class WebView2Page : IPage
 
     public void Navigate(string url)
     {
-        if (Core is { } core) Load(core, url);
-        else { pending = url; Url = url; }
+        Url = url;
+        if (Core is { } core)
+        {
+            // RefreshScripts reads Url, so the destination's host is the one
+            // the next document gets.
+            RefreshScripts();
+            Load(core, url);
+        }
+        else pending = url;
     }
 
     public void Back() { if (Core is { CanGoBack: true } c) c.GoBack(); }

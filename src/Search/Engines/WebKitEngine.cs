@@ -31,7 +31,7 @@ sealed class WebKitEngine : IEngine
     }
 
     public BrowserWindow Browser { get; private set; } = null!;
-    public Func<IEnumerable<string>> DocumentScripts { get; set; } = () => Array.Empty<string>();
+    public Func<string, IEnumerable<string>> DocumentScripts { get; set; } = _ => Array.Empty<string>();
     public IExtensionHost Extensions => extensions;
     internal WebKitExtensions extensions = null!;
     internal readonly List<WebKitPage> Pages = new();
@@ -176,7 +176,8 @@ sealed class WebKitEngine : IEngine
     internal void Scripts(WebKitPage page)
     {
         WK.WKUserContentControllerRemoveAllUserScripts(page.Controller);
-        var all = DocumentScripts().ToList();
+        var host = Uri.TryCreate(page.Url, UriKind.Absolute, out var u) ? u.Host : "";
+        var all = DocumentScripts(host).Where(s => !string.IsNullOrEmpty(s)).ToList();
         // This build may not compile content rules at all: then the ad
         // blocker is the page-level part only (empty ad slots hidden).
         if (shield == IntPtr.Zero && Browser.Settings.ShieldOn) all.Add(Shield.CosmeticScript(Browser.Settings.ShieldPaused));

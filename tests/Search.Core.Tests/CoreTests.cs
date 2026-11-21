@@ -391,8 +391,13 @@ public class HiddenTests
         var hidden = new Hidden();
         hidden.Add("www.example.com", new Veil { Selector = "#banner", Label = "Banner" });
         hidden.Add("example.com", new Veil { Selector = "#banner", Label = "Banner" });
+        hidden.Add("other.com", new Veil { Selector = "#cookie", Label = "Cookie" });
         Assert.Single(hidden.On("example.com"));
-        Assert.Contains("#banner", hidden.Script());
+        var script = hidden.Script("example.com");
+        Assert.Contains("#banner", script);
+        Assert.DoesNotContain("#cookie", script);      // only this host's list travels
+        Assert.Contains("#cookie", hidden.Script("other.com"));
+        Assert.Equal("", hidden.Script("nothing.com"));
         hidden.Remove("example.com", "#banner");
         Assert.Empty(hidden.On("example.com"));
     }

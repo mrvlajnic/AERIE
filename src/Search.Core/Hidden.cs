@@ -34,13 +34,15 @@ public sealed class Hidden
 
     public void Clear(string host) => Sites.Remove(Key(host));
 
-    /// Added to every document at creation: hides this site's selectors.
-    public string Script()
+    /// Added to a document at creation: only this host's selectors travel, so a
+    /// page never receives another site's list.
+    public string Script(string host)
     {
-        var map = Sites.ToDictionary(k => k.Key, k => k.Value.Select(v => v.Selector).ToArray());
-        var json = System.Text.Json.JsonSerializer.Serialize(map);
-        return "(function(){try{" + Shield.Put + "var m=" + json + ";var h=location.hostname.toLowerCase().replace(/^www\\./,'');" +
-               "var l=m[h];if(!l||!l.length)return;var s=document.getElementById('office-hidden')||document.createElement('style');" +
+        var key = Key(host);
+        if (!Sites.TryGetValue(key, out var list) || list.Count == 0) return "";
+        var json = System.Text.Json.JsonSerializer.Serialize(list.Select(v => v.Selector).ToArray());
+        return "(function(){try{" + Shield.Put + "var l=" + json + ";if(!l.length)return;" +
+               "var s=document.getElementById('office-hidden')||document.createElement('style');" +
                "s.id='office-hidden';s.textContent=l.map(function(x){return x+'{display:none !important}'}).join('\\n');put(s);" +
                "}catch(e){}})();";
     }

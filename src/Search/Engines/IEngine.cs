@@ -55,8 +55,9 @@ interface IEngine
     string? Version { get; }
     Task Start(BrowserWindow browser);
     IPage Create(PageOwner owner);
-    /// The scripts every page runs before its document, besides the engine's own.
-    Func<IEnumerable<string>> DocumentScripts { set; }
+    /// The scripts a document for this host runs before it draws, besides the
+    /// engine's own.
+    Func<string, IEnumerable<string>> DocumentScripts { set; }
     Task ApplyShield(bool on, IReadOnlyCollection<string> paused);
     void Recolour();
     Task ClearData();
