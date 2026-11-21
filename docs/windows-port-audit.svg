@@ -14,8 +14,8 @@
 <text x="559" y="87" font-size="12" font-weight="bold" fill="#241100" text-anchor="middle">major: 15</text>
 <rect x="605.0" y="72" width="77" height="22" rx="4" fill="#d9b40a"/>
 <text x="644" y="87" font-size="12" font-weight="bold" fill="#241f00" text-anchor="middle">minor: 19</text>
-<rect x="689.4" y="72" width="77" height="22" rx="4" fill="#1b5e20"/>
-<text x="728" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">fixed: 23</text>
+<rect x="689.4" y="72" width="137" height="22" rx="4" fill="#1b5e20"/>
+<text x="758" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">fixed: 23/63 (37%)</text>
 <text x="18" y="110" font-size="11.5" fill="#333"><tspan font-weight="bold" fill="#777">EVIDENCE  </tspan>30 CultureNotFoundExceptions in errors.log → InvariantGlobalization removed → typed example.com, page loaded, session + history written, no errors.</text>
 <rect x="18" y="126" width="13" height="13" rx="3" fill="#c62828" stroke="#666" stroke-width="0.4"/>
 <text x="36" y="136" font-size="11" fill="#444">blocker</text>
@@ -31,7 +31,7 @@
 <line x1="18" y1="136" x2="1222" y2="136" stroke="#e0e0e0"/>
 <text x="18" y="169" font-size="15.5" font-weight="bold" fill="#111">Input &amp; focus</text>
 <text x="144" y="168" font-size="11.5" fill="#777">the one field, keys, focus</text>
-<text x="1222" y="168" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">21.7% · 13 issues · 13 fixed</text>
+<text x="1222" y="168" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">100% fixed (13/13)</text>
 <rect x="18" y="178" width="1204" height="144" fill="#efefef"/>
 <rect x="18.5" y="178.5" width="171.0" height="142.8" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
 <text x="104.0" y="254.0" font-size="12.0" fill="#ffffff" text-anchor="middle">Page shortcuts (fixed)</text>
@@ -61,7 +61,7 @@
 <text x="1153.2" y="289.9" font-size="12.0" fill="#ffffff" text-anchor="middle">H-wheel (fixed)</text>
 <text x="18" y="364.8222976870845" font-size="15.5" font-weight="bold" fill="#111">Core logic (Search.Core)</text>
 <text x="241" y="363.8222976870845" font-size="11.5" fill="#777">address, history, shielding, storage</text>
-<text x="1222" y="363.8222976870845" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">19.6% · 12 issues · 1 blocker · 5 major · 2 minor · 1 info · 3 fixed</text>
+<text x="1222" y="363.8222976870845" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">25% fixed (3/12) · 1 blocker · 5 major · 2 minor · 1 info</text>
 <rect x="18" y="373.8222976870845" width="1204" height="135" fill="#efefef"/>
 <rect x="18.5" y="374.3" width="189.5" height="134.0" fill="#c62828" stroke="#ffffff" stroke-width="1"/>
 <text x="113.3" y="445.4" font-size="12.0" fill="#ffffff" text-anchor="middle">CRX3 unverified</text>
@@ -89,7 +89,7 @@
 <text x="1191.5" y="443.3" font-size="5.8" fill="#ffffff" text-anchor="middle">Core port prese…</text>
 <text x="18" y="551.8149176930049" font-size="15.5" font-weight="bold" fill="#111">WebView2 integration</text>
 <text x="206" y="550.8149176930049" font-size="11.5" fill="#777">permissions, crashes, downloads, extensions</text>
-<text x="1222" y="550.8149176930049" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">10.5% · 7 issues · 3 major · 3 minor · 1 fixed</text>
+<text x="1222" y="550.8149176930049" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">14% fixed (1/7) · 3 major · 3 minor</text>
 <rect x="18" y="560.8149176930049" width="1204" height="92" fill="#efefef"/>
 <rect x="18.5" y="561.3" width="211.5" height="90.9" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
 <text x="124.2" y="610.9" font-size="12.0" fill="#241100" text-anchor="middle">No permissions</text>
@@ -107,7 +107,7 @@
 <text x="1151.2" y="609.8" font-size="8.8" fill="#241f00" text-anchor="middle">process-per-site isolation</text>
 <text x="18" y="695.7290658226464" font-size="15.5" font-weight="bold" fill="#111">WebKit engine &amp; extensions</text>
 <text x="259" y="694.7290658226464" font-size="11.5" fill="#777">the optional engine and its runtime</text>
-<text x="1222" y="694.7290658226464" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">11.8% · 6 issues · 1 blocker · 1 major · 3 minor · 1 fixed</text>
+<text x="1222" y="694.7290658226464" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">17% fixed (1/6) · 1 blocker · 1 major · 3 minor</text>
 <rect x="18" y="704.7290658226464" width="1204" height="98" fill="#efefef"/>
 <rect x="18.5" y="705.2" width="315.8" height="97.5" fill="#c62828" stroke="#ffffff" stroke-width="1"/>
 <text x="176.4" y="758.0" font-size="12.0" fill="#ffffff" text-anchor="middle">Any page fakes an extension</text>
@@ -123,7 +123,7 @@
 <text x="1158.6" y="756.3" font-size="6.8" fill="#241f00" text-anchor="middle">Find/print/PiP/passwords stubs</text>
 <text x="18" y="846.2052626734039" font-size="15.5" font-weight="bold" fill="#111">Performance (the lag)</text>
 <text x="215" y="845.2052626734039" font-size="11.5" fill="#777">render churn, memory, freezing</text>
-<text x="1222" y="845.2052626734039" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">13.0% · 8 issues · 4 major · 2 minor · 2 fixed</text>
+<text x="1222" y="845.2052626734039" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">25% fixed (2/8) · 4 major · 2 minor</text>
 <rect x="18" y="855.2052626734039" width="1204" height="105" fill="#efefef"/>
 <rect x="18.5" y="855.7" width="171.0" height="103.8" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
 <text x="104.0" y="911.7" font-size="12.0" fill="#241100" text-anchor="middle">Strip rebuilt per event</text>
@@ -143,7 +143,7 @@
 <text x="1164.7" y="910.0" font-size="7.2" fill="#241f00" text-anchor="middle">Low-end mode may cause lag</text>
 <text x="18" y="1002.9856496226993" font-size="15.5" font-weight="bold" fill="#111">Lifecycle &amp; data</text>
 <text x="171" y="1001.9856496226993" font-size="11.5" fill="#777">startup, pipes, profiles, persistence</text>
-<text x="1222" y="1001.9856496226993" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">8.7% · 5 issues · 2 major · 1 minor · 2 fixed</text>
+<text x="1222" y="1001.9856496226993" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">40% fixed (2/5) · 2 major · 1 minor</text>
 <rect x="18" y="1011.9856496226993" width="1204" height="81" fill="#efefef"/>
 <rect x="18.5" y="1012.5" width="257.0" height="80.5" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
 <text x="147.0" y="1056.8" font-size="12.0" fill="#ffffff" text-anchor="middle">Init failures visible</text>
@@ -157,7 +157,7 @@
 <text x="1136.0" y="1056.4" font-size="10.8" fill="#241f00" text-anchor="middle">Pipe shared across profiles</text>
 <text x="18" y="1136.475480660131" font-size="15.5" font-weight="bold" fill="#111">Build, CI &amp; packaging</text>
 <text x="215" y="1135.475480660131" font-size="11.5" fill="#777">branch, tests, artefacts</text>
-<text x="1222" y="1135.475480660131" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">10.3% · 8 issues · 6 minor · 1 info · 1 fixed</text>
+<text x="1222" y="1135.475480660131" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">12% fixed (1/8) · 6 minor · 1 info</text>
 <rect x="18" y="1145.475480660131" width="1204" height="91" fill="#efefef"/>
 <rect x="18.5" y="1146.0" width="216.6" height="89.6" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
 <text x="126.8" y="1194.8" font-size="12.0" fill="#ffffff" text-anchor="middle">Bench gates WebView2</text>
@@ -177,7 +177,7 @@
 <text x="1164.0" y="1194.2" font-size="10.0" fill="#ffffff" text-anchor="middle">Build &amp; tests clean</text>
 <text x="18" y="1279.0427033095116" font-size="15.5" font-weight="bold" fill="#111">Repo &amp; identity</text>
 <text x="162" y="1278.0427033095116" font-size="11.5" fill="#777">name, attribution, docs</text>
-<text x="1222" y="1278.0427033095116" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">4.5% · 4 issues · 2 minor · 2 info</text>
+<text x="1222" y="1278.0427033095116" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">0% fixed (0/4) · 2 minor · 2 info</text>
 <rect x="18" y="1288.0427033095116" width="1204" height="64" fill="#efefef"/>
 <rect x="18.5" y="1288.5" width="333.4" height="63.0" fill="#d9b40a" stroke="#ffffff" stroke-width="1"/>
 <text x="185.2" y="1324.1" font-size="12.0" fill="#241f00" text-anchor="middle">Still named Search</text>

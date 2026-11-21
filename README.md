@@ -15,8 +15,9 @@ being established.
 
 ![AERIE code audit treemap](docs/windows-port-audit.svg)
 
-*Audit of the current prototype — 63 findings: 23 fixed, 2 blockers, 15 major,
-19 minor. Tiles are coloured by severity and sized by impact; the full map is
+*Audit of the current prototype — 63 findings: **23 fixed (37%)**, 2 blockers,
+15 major, 19 minor. Section percentages show how much of each area is fixed.
+Tiles are coloured by severity and sized by impact; the full map is
 [docs/windows-port-audit.svg](docs/windows-port-audit.svg).*
 
 ## What works today
