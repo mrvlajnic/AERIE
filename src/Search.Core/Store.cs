@@ -78,6 +78,9 @@ public sealed class Settings
     public bool ShieldOn { get; set; } = true;
     public List<string> ShieldPaused { get; set; } = new();
     public int SleepMinutes { get; set; } = 10;            // 0 = never
+    /// Background pages kept awake across all spaces; the rest sleep in LRU
+    /// order. 0 = no cap. WebView2 is one controller per awake tab.
+    public int MaxAwakeTabs { get; set; } = 10;
     /// Background tabs are frozen this many seconds after you leave them.
     public int FreezeSeconds { get; set; } = 20;
     /// Chromium's low-memory mode. Smaller caches; gradients can band a little.

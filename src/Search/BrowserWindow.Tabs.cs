@@ -103,6 +103,37 @@ sealed partial class BrowserWindow
                 _ = t.Page!.Freeze();
             }
         }
+        EnforceAwakeCap();
+    }
+
+    /// One WebView2 controller per awake tab is the architecture; this bounds
+    /// how many stay awake, sleeping the least recently used background pages.
+    void EnforceAwakeCap()
+    {
+        int cap = Settings.MaxAwakeTabs;
+        if (cap <= 0) return;
+        var awake = Spaces.SelectMany(s => s.All).Where(t => t.Awake).ToList();
+        int over = awake.Count - cap;
+        if (over <= 0) return;
+        foreach (var t in awake.Where(t => t != Current && !t.Audible)
+                     .OrderBy(t => t.Pinned).ThenBy(t => t.Seen))
+        {
+            if (over <= 0) break;
+            Sleep(t);
+            over--;
+        }
+    }
+
+    /// Called from the low-memory watcher: give back several background tabs.
+    void RelieveMemory()
+    {
+        if (Space == null) return;
+        var sleep = Spaces.SelectMany(s => s.All)
+            .Where(t => t.Awake && t != Current && !t.Audible)
+            .OrderBy(t => t.Pinned).ThenBy(t => t.Seen)
+            .Take(3).ToList();
+        foreach (var t in sleep) Sleep(t);
+        if (sleep.Count > 0) Toast("Memory is low — sleeping background tabs");
     }
 
     /// Minimised: every page is frozen and this process gives back what it can.

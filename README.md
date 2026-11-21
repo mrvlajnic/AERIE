@@ -15,8 +15,8 @@ being established.
 
 ![AERIE code audit treemap](docs/windows-port-audit.svg)
 
-*Audit of the current prototype — 63 findings: **38 fixed (60%)**, no blockers,
-3 major, 18 minor. Section percentages show how much of each area is fixed.
+*Audit of the current prototype — 63 findings: **39 fixed (62%)**, no blockers,
+2 major, 18 minor. Section percentages show how much of each area is fixed.
 Tiles are coloured by severity and sized by impact; the full map is
 [docs/windows-port-audit.svg](docs/windows-port-audit.svg).*
 
@@ -31,11 +31,11 @@ Tiles are coloured by severity and sized by impact; the full map is
 
 ## Known issues
 
-The audit found 63 issues; **38 are fixed (60%) and no blockers remain.**
+The audit found 63 issues; **39 are fixed (62%) and no blockers remain.**
 
 The largest remaining items:
 
-- **Memory** — one WebView2 per tab, and a process set per fresh space.
+- **Process sets** — each fresh space runs its own WebView2 profile and process set.
 - **Store** — a corrupt file is silently replaced instead of quarantined.
 - **WebKit** — find, print, picture-in-picture and passwords remain stubs.
 - **UI tests** — CI still has none.
@@ -77,6 +77,10 @@ Fixed in this batch, each verified against the running build:
 - **History** — URL identity dedupes fragments and strips credentials; ranking
   is match quality × log(2 + frecency); one letter finishes a front door; a
   typo within one edit still finds the page.
+- **Memory** — at most **10** background pages stay awake (`maxAwakeTabs` in
+  settings.json), least-recently-used first, and Windows' low-memory signal
+  sleeps three more. Per-tab controllers remain, but what stays resident is
+  bounded instead of growing with the tab count.
 - **Lifecycle** — page-init failures are visible, links arriving during startup
   are queued, and DevTools are off in release unless enabled in settings.
 - **Accessibility** — every button, tab, pin and toggle is now Tab-reachable,

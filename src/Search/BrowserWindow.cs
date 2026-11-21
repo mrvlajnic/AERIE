@@ -94,6 +94,8 @@ sealed partial class BrowserWindow : Window
         sleepTimer.Start();
 
         Theme.Changed += OnTheme;
+        Memory.Low += () => Dispatcher.BeginInvoke((Action)RelieveMemory);
+        Memory.Start();
         SourceInitialized += (_, _) =>
         {
             Native.PaintFrame(this);
