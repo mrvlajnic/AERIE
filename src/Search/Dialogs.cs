@@ -224,6 +224,13 @@ sealed class SettingsWindow : Plain
                 Store.Save("hidden.json", browser.Hidden);
                 await browser.RefreshHidden();
                 Draw();
+            }),
+            ($"Forget Site Permissions ({S.SitePermissions.Count})", S.SitePermissions.Count == 0 ? null : () =>
+            {
+                S.SitePermissions.Clear();
+                browser.SaveSettings();
+                browser.Toast("Site permissions forgotten");
+                Draw();
             }));
 
         Section("Extensions");

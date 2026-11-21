@@ -91,6 +91,8 @@ public sealed class Settings
     public bool SavePasswords { get; set; } = true;
     /// WebView2 DevTools (F12). Off by default; a debugger attach still enables them.
     public bool DevTools { get; set; }
+    /// What each site may use: host -> permission kind -> allowed.
+    public Dictionary<string, Dictionary<string, bool>> SitePermissions { get; set; } = new();
     public bool SpaceSwipe { get; set; } = true;
     public double Width { get; set; } = 1280;
     public double Height { get; set; } = 820;

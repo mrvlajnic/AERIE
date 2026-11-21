@@ -69,6 +69,8 @@ sealed class WebKitPage : IPage
     public event Action<bool>? FullScreen { add { } remove { } }
 
     IntPtr Info => GCHandle.ToIntPtr(self);
+    int crashReloads;
+    DateTime lastCrash;
     static int uiThread;
 
     /// Every callback from WebKit runs through here: an exception thrown
@@ -218,6 +220,7 @@ sealed class WebKitPage : IPage
         {
             var p = From(info);
             p.loading = false;
+            p.crashReloads = 0;
             p.Refresh();
             Trace.Log("page: finished " + p.Url);
             p.Finished?.Invoke(p.Url, p.Title, true);
@@ -245,8 +248,24 @@ sealed class WebKitPage : IPage
         {
             var p = From(info);
             p.loading = false;
-            Application.Current.Dispatcher.BeginInvoke(() => { if (!p.disposed) WK.WKPageReload(p.PageRef); });
+            var now = DateTime.UtcNow;
+            if ((now - p.lastCrash).TotalSeconds > 60) p.crashReloads = 0;
+            p.lastCrash = now;
+            if (p.crashReloads++ < 2)
+                Application.Current.Dispatcher.BeginInvoke(() => { if (!p.disposed) WK.WKPageReload(p.PageRef); });
+            else
+                Application.Current.Dispatcher.BeginInvoke(() => { if (!p.disposed) p.ShowCrash("This page crashed."); });
         });
+    }
+
+    /// What a page that keeps crashing gets instead of another silent reload.
+    internal void ShowCrash(string why)
+    {
+        var html = "<!doctype html><meta charset=\"utf-8\"><title>Page crashed</title>" +
+            "<body style=\"font:15px 'Segoe UI',system-ui;text-align:center;margin-top:16vh;color:#222\">" +
+            "<h1>This page crashed</h1><p style=\"color:#666\">" + System.Net.WebUtility.HtmlEncode(why) + "</p>" +
+            "<p style=\"color:#666\">Press Ctrl+R to try again, or close the tab.</p></body>";
+        Navigate("data:text/html;charset=utf-8," + Uri.EscapeDataString(html));
     }
 
     [UnmanagedCallersOnly(CallConvs = new[] { typeof(CallConvCdecl) })]

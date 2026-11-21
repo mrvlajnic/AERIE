@@ -79,6 +79,17 @@ sealed class WebView2Engine : IEngine
     {
         foreach (var p in profiles.Values) await p.ClearBrowsingDataAsync();
     }
+
+    public void DeleteProfile(string profile)
+    {
+        if (!profiles.Remove(profile, out var p)) return;
+        try { p.Delete(); }
+        catch
+        {
+            // Older runtimes may not allow deleting a profile still in memory.
+            try { Directory.Delete(Path.Combine(Store.Folder, "Web", "EBWebView", profile), true); } catch { }
+        }
+    }
 }
 
 sealed class WebView2Page : IPage
@@ -91,6 +102,8 @@ sealed class WebView2Page : IPage
     string? shieldScript;
     readonly List<string> scriptIds = new();
     bool disposed;
+    int crashReloads;
+    DateTime lastCrash;
 
     /// Browser shortcuts pressed inside a page go to the page's process. The
     /// WPF WebView2 control exposes no accelerator event, so a capture listener
@@ -205,6 +218,7 @@ sealed class WebView2Page : IPage
         core.NavigationCompleted += (_, e) =>
         {
             Loading = false;
+            if (e.IsSuccess) crashReloads = 0;
             Changed?.Invoke();
             Finished?.Invoke(core.Source, core.DocumentTitle, e.IsSuccess);
         };
@@ -217,9 +231,45 @@ sealed class WebView2Page : IPage
         core.IsMutedChanged += (_, _) => Changed?.Invoke();
         core.ProcessFailed += (_, e) =>
         {
-            if (e.ProcessFailedKind is CoreWebView2ProcessFailedKind.RenderProcessExited or CoreWebView2ProcessFailedKind.RenderProcessUnresponsive)
+            if (e.ProcessFailedKind is not (CoreWebView2ProcessFailedKind.RenderProcessExited or CoreWebView2ProcessFailedKind.RenderProcessUnresponsive))
+                return;
+            // Two chances a minute, then say what happened instead of looping.
+            var now = DateTime.UtcNow;
+            if ((now - lastCrash).TotalSeconds > 60) crashReloads = 0;
+            lastCrash = now;
+            if (crashReloads++ < 2)
+            {
                 try { core.Reload(); } catch { }
+                return;
+            }
+            ShowCrash(core, e.ProcessFailedKind == CoreWebView2ProcessFailedKind.RenderProcessUnresponsive
+                ? "This page stopped responding."
+                : "This page crashed.");
         };
+
+        // Downloads: choose where it goes, and say when it lands.
+        core.DownloadStarting += (_, e) =>
+        {
+            var suggested = Path.GetFileName(e.ResultFilePath);
+            var dialog = new Microsoft.Win32.SaveFileDialog
+            {
+                Title = "Save download",
+                FileName = string.IsNullOrWhiteSpace(suggested) ? "download" : suggested,
+            };
+            if (dialog.ShowDialog(engine.Browser) != true) { e.Cancel = true; return; }
+            e.ResultFilePath = dialog.FileName;
+            e.Handled = true;
+            var operation = e.DownloadOperation;
+            operation.StateChanged += (_, _) =>
+            {
+                if (operation.State == CoreWebView2DownloadState.Completed)
+                    engine.Browser.Toast("Downloaded " + Path.GetFileName(operation.ResultFilePath));
+                else if (operation.State == CoreWebView2DownloadState.Interrupted)
+                    engine.Browser.Toast("Download failed");
+            };
+        };
+
+        core.PermissionRequested += (_, e) => OnPermission(e);
         if (pending != null) { var u = pending; pending = null; Load(core, u); }
     }
 
@@ -283,6 +333,59 @@ sealed class WebView2Page : IPage
             return image;
         }
         catch { return null; }
+    }
+
+    /// Camera, microphone, location, notifications: remembered per site, asked
+    /// once, never granted silently. Private tabs ask every time.
+    void OnPermission(CoreWebView2PermissionRequestedEventArgs e)
+    {
+        var host = Uri.TryCreate(e.Uri, UriKind.Absolute, out var uri) ? Hidden.Key(uri.Host) : "";
+        var kind = e.PermissionKind.ToString();
+        var settings = engine.Browser.Settings;
+        if (!owner.Private && host.Length > 0
+            && settings.SitePermissions.TryGetValue(host, out var saved)
+            && saved.TryGetValue(kind, out var remembered))
+        {
+            e.State = remembered ? CoreWebView2PermissionState.Allow : CoreWebView2PermissionState.Deny;
+            e.SavesInProfile = false;
+            return;
+        }
+
+        var answer = MessageBox.Show(
+            engine.Browser,
+            $"{Address.WithoutWww(host)} wants to use {Friendly(kind)}.\n\nAllow?",
+            "Search", MessageBoxButton.YesNo, MessageBoxImage.Question);
+        bool allow = answer == MessageBoxResult.Yes;
+        e.State = allow ? CoreWebView2PermissionState.Allow : CoreWebView2PermissionState.Deny;
+        e.SavesInProfile = false;
+        if (!owner.Private && host.Length > 0)
+        {
+            if (!settings.SitePermissions.TryGetValue(host, out var map))
+                settings.SitePermissions[host] = map = new();
+            map[kind] = allow;
+            engine.Browser.SaveSettings();
+        }
+    }
+
+    static string Friendly(string kind) => kind switch
+    {
+        "Camera" => "your camera",
+        "Microphone" => "your microphone",
+        "Geolocation" => "your location",
+        "Notifications" => "send notifications",
+        "ClipboardRead" => "read your clipboard",
+        "MultipleAutomaticDownloads" => "download several files",
+        _ => "this permission",
+    };
+
+    void ShowCrash(CoreWebView2 core, string why)
+    {
+        var html = "<!doctype html><meta charset=\"utf-8\"><title>Page crashed</title>" +
+            "<style>body{font:15px 'Segoe UI',system-ui;margin:16vh auto;max-width:32rem;color:#222;text-align:center}" +
+            "p{color:#666;line-height:1.5}</style>" +
+            "<h1>This page crashed</h1><p>" + System.Net.WebUtility.HtmlEncode(why) + "</p>" +
+            "<p>Press Ctrl+R to try again, or close the tab.</p></body>";
+        try { core.NavigateToString(html); } catch { }
     }
 
     void Load(CoreWebView2 core, string url)

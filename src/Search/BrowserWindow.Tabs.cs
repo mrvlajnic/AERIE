@@ -408,6 +408,7 @@ sealed partial class BrowserWindow
         if (n > 0 && MessageBox.Show(this, $"Delete “{s.Name}” and close its {n} tab{(n == 1 ? "" : "s")}?", "Search",
                 MessageBoxButton.OKCancel, MessageBoxImage.Question) != MessageBoxResult.OK) return;
         foreach (var t in s.All.ToList()) Sleep(t);
+        if (s.Fresh) Engine.DeleteProfile(s.Profile);   // its sign-ins go with it
         int i = Spaces.IndexOf(s);
         Spaces.Remove(s);
         if (Space == s) { Space = null!; SwitchSpace(Spaces[Math.Max(0, i - 1)]); }

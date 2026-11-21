@@ -15,8 +15,8 @@ being established.
 
 ![AERIE code audit treemap](docs/windows-port-audit.svg)
 
-*Audit of the current prototype — 63 findings: **31 fixed (49%)**, no blockers,
-10 major, 18 minor. Section percentages show how much of each area is fixed.
+*Audit of the current prototype — 63 findings: **35 fixed (56%)**, no blockers,
+6 major, 18 minor. Section percentages show how much of each area is fixed.
 Tiles are coloured by severity and sized by impact; the full map is
 [docs/windows-port-audit.svg](docs/windows-port-audit.svg).*
 
@@ -31,15 +31,14 @@ Tiles are coloured by severity and sized by impact; the full map is
 
 ## Known issues
 
-The audit found 63 issues; **31 are fixed (49%) and no blockers remain.**
+The audit found 63 issues; **35 are fixed (56%) and no blockers remain.**
 
 The largest remaining items:
 
-- **Profiles** — deleting a space still leaves its profile and cookies on disk.
-- **Permissions** — WebView2 permission requests have no per-site model yet.
-- **Downloads** — no host handling: no panel, path choice or pause/resume.
-- **Crashes** — a failed renderer reloads instead of showing a crash page.
 - **Memory** — one WebView2 per tab, and a process set per fresh space.
+- **History** — no URL identity or fragment dedupe, and frecency still diverges.
+- **Typo tolerance** — the tab switcher's matcher is not the Mac app's.
+- **Store** — a corrupt file is silently replaced instead of quarantined.
 - **WebKit** — find, print, picture-in-picture and passwords remain stubs.
 - **UI tests** — CI still has none.
 
@@ -70,6 +69,12 @@ Fixed in this batch, each verified against the running build:
 - **Orphans** — a kill-on-close job object ties WebView2/WebKit children to the
   app, and the single-instance mutex and pipe are keyed by data folder.
 - **Shield** — a compact public-suffix list replaces the two-letter heuristic.
+- **Crashes** — two silent retries a minute, then a crash page with Ctrl+R;
+  WebKit gets the same treatment instead of an endless reload.
+- **Permissions** — camera, microphone, location and notifications ask once per
+  site and are remembered; private tabs ask every time, and Settings can forget.
+- **Downloads** — a Save dialog per download and a completion toast.
+- **Space deletion** — a fresh space's profile and cookies are deleted with it.
 - **Lifecycle** — page-init failures are visible, links arriving during startup
   are queued, and DevTools are off in release unless enabled in settings.
 - **Accessibility** — every button, tab, pin and toggle is now Tab-reachable,

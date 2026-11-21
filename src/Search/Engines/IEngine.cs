@@ -61,6 +61,8 @@ interface IEngine
     void Recolour();
     Task ClearData();
     IExtensionHost Extensions { get; }
+    /// Removes a space's profile data when that space is deleted.
+    void DeleteProfile(string profile) { }
 }
 
 sealed record ExtensionInfo(string Id, string Name, string Folder, string? StoreId, bool HasPopup, bool Enabled);

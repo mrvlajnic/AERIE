@@ -242,6 +242,16 @@ sealed class WebKitEngine : IEngine
         foreach (var s in stores.Values) WK.WKWebsiteDataStoreRemoveMemoryCaches(s, IntPtr.Zero, &Removed);
     }
 
+    public void DeleteProfile(string profile)
+    {
+        try
+        {
+            var folder = Path.Combine(Store.Folder, "WebKit", profile);
+            if (Directory.Exists(folder)) Directory.Delete(folder, true);
+        }
+        catch { }
+    }
+
     public Task ClearData()
     {
         RemoveMemoryCaches();
