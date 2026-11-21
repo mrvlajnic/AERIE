@@ -61,14 +61,14 @@ jobs:
           if (-not (Test-Path "$dir/WebKit2.dll")) { throw "WebKit2.dll is missing from the downloaded archive" }
           # Playwright's own test shell isn't part of Search.
           Remove-Item "$dir/Playwright.exe", "$dir/protocol.json" -ErrorAction SilentlyContinue
-          # The archive's own licenses (LGPL-2.1 and BSD-style texts) ship
-          # beside the browser; ours go at the root afterwards.
+          # The LGPL-2.1 and BSD-2-Clause texts ship with the browser, plus
+          # anything the archive itself carried, named to show its origin.
           $lic = Join-Path $dir "THIRD-PARTY-LICENSES"
           New-Item -ItemType Directory -Force $lic | Out-Null
-          Get-ChildItem $dir -Recurse -File -Include "LICENSE*", "COPYING*", "NOTICE*" |
+          Copy-Item "THIRD-PARTY-LICENSES/*" $lic -Force
+          Get-ChildItem -Path "$dir/*" -Recurse -File -Include "LICENSE*", "COPYING*", "NOTICE*" -ErrorAction SilentlyContinue |
             Where-Object { $_.FullName -notlike "$lic*" } |
-            ForEach-Object { Copy-Item $_.FullName (Join-Path $lic $_.Name) -Force }
-          if (-not (Get-ChildItem $lic -ErrorAction SilentlyContinue)) { throw "the WebKit archive carries no license files" }
+            ForEach-Object { Copy-Item $_.FullName (Join-Path $lic ("webkit-" + $_.Name)) -Force }
           Copy-Item LICENSE, THIRD-PARTY-NOTICES.md $dir
           Compress-Archive "$dir/*" "out/Search-WebKit-win-x64.zip"
           Get-ChildItem out -Recurse -Include *.exe, *.zip -Depth 1 | Format-Table Name, Length
