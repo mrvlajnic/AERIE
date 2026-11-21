@@ -98,7 +98,7 @@ abstract class Sheet : Window
         Grid.SetColumn(words, 1);
         g.Children.Add(words);
         if (trailing != null) { Grid.SetColumn(trailing, 2); g.Children.Add(trailing); }
-        var row = Ui.Button(g, act, pad: new Thickness(10, 7, 10, 7), rest: chosen ? Theme.Wash : Brushes.Transparent, radius: 7);
+        var row = Ui.Button(g, act, title, pad: new Thickness(10, 7, 10, 7), rest: chosen ? Theme.Wash : Brushes.Transparent, radius: 7);
         return row;
     }
 
@@ -494,20 +494,25 @@ sealed class SiteCard : Sheet
     {
         var d = new DockPanel { Margin = new Thickness(0, 4, 0, 4), Opacity = enabled ? 1 : 0.5 };
         var knob = new Border { Width = 16, Height = 16, CornerRadius = new CornerRadius(8), Background = Brushes.White, HorizontalAlignment = on ? HorizontalAlignment.Right : HorizontalAlignment.Left, Margin = new Thickness(2) };
-        var track = new Border { Width = 36, Height = 20, CornerRadius = new CornerRadius(10), Background = on ? Theme.Ink : Theme.Faint, Child = knob, Cursor = Cursors.Arrow };
+        var track = new ClickableBorder { Width = 36, Height = 20, CornerRadius = new CornerRadius(10), Background = on ? Theme.Ink : Theme.Faint, Child = knob, Cursor = Cursors.Arrow };
+        void Flip()
+        {
+            on = !on;
+            track.Background = on ? Theme.Ink : Theme.Faint;
+            knob.HorizontalAlignment = on ? HorizontalAlignment.Right : HorizontalAlignment.Left;
+            changed(on);
+        }
         if (enabled)
-            track.MouseLeftButtonUp += (_, _) =>
-            {
-                on = !on;
-                track.Background = on ? Theme.Ink : Theme.Faint;
-                knob.HorizontalAlignment = on ? HorizontalAlignment.Right : HorizontalAlignment.Left;
-                changed(on);
-            };
+        {
+            track.Activate = Flip;
+            track.MouseLeftButtonUp += (_, _) => Flip();
+        }
         DockPanel.SetDock(track, Dock.Right);
         d.Children.Add(track);
         var t = Ui.Text(label, 13);
         t.TextWrapping = TextWrapping.Wrap;
         d.Children.Add(t);
+        if (enabled) Ui.Accessible(track, label);
         return d;
     }
 }

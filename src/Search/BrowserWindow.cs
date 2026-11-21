@@ -322,7 +322,7 @@ sealed partial class BrowserWindow : Window
             d.Children.Add(dot);
         }
         d.Children.Add(label);
-        return Ui.Button(d, () => OpenOmnibox(newTab: sel == null, priv: sel?.Private == true), "Ctrl+L", new Thickness(2, 3, 6, 3), rest: Theme.SideTile, hover: Theme.SideHover, radius: 8);
+        return Ui.Button(d, () => OpenOmnibox(newTab: sel == null, priv: sel?.Private == true), "Address and search (Ctrl+L)", new Thickness(2, 3, 6, 3), rest: Theme.SideTile, hover: Theme.SideHover, radius: 8);
     }
 
     UIElement Footer()
@@ -455,7 +455,7 @@ sealed partial class BrowserWindow : Window
         Grid.SetColumn(close, 3);
         grid.Children.Add(close);
 
-        var row = new Border
+        var row = new ClickableBorder
         {
             Child = grid, Padding = new Thickness(8, 6, 4, 6), CornerRadius = new CornerRadius(7),
             Background = live ? Theme.SideWash : Brushes.Transparent, ToolTip = t.Url, Margin = new Thickness(0, 0, 0, 1),
@@ -484,7 +484,7 @@ sealed partial class BrowserWindow : Window
         close.Opacity = live ? 1 : 0;
         Grid.SetColumn(close, 2);
         grid.Children.Add(close);
-        var chip = new Border
+        var chip = new ClickableBorder
         {
             Child = grid, Padding = new Thickness(9, 5, 4, 5), CornerRadius = new CornerRadius(8), Margin = new Thickness(0, 0, 3, 0),
             Background = live ? Theme.Ground : Brushes.Transparent, ToolTip = t.Display + "\n" + t.Url,
@@ -499,7 +499,7 @@ sealed partial class BrowserWindow : Window
     Border PinTile(Tab t, double height)
     {
         bool live = t == Space.Selected;
-        var tile = new Border
+        var tile = new ClickableBorder
         {
             Height = height, MinWidth = height, CornerRadius = new CornerRadius(8), Margin = new Thickness(0, 0, 4, 4),
             Background = live ? Theme.SidePinLive : Theme.SideTile, ToolTip = t.Display, Child = Favicon(t, 16),
@@ -519,17 +519,26 @@ sealed partial class BrowserWindow : Window
     /// right-click for the rest, drag to move.
     void Interactive(Border b, Tab t)
     {
+        void Go()
+        {
+            if (t == Space.Selected && !Settings.TabsOnSide && !t.Pinned) { OpenOmnibox(newTab: false); return; }
+            _ = Select(t);
+        }
+        if (b is ClickableBorder clickable)
+        {
+            clickable.Activate = Go;
+            Ui.Accessible(clickable, t.Display + (t.Pinned ? ", pinned" : "") + (t.Private ? ", private" : ""));
+        }
         b.MouseLeftButtonDown += (_, e) =>
         {
             if (e.ClickCount == 2 && !t.Pinned) { Rename(t); e.Handled = true; return; }
             dragFrom = e.GetPosition(this); pressed = t;
         };
-        b.MouseLeftButtonUp += async (_, e) =>
+        b.MouseLeftButtonUp += (_, e) =>
         {
             if (pressed != t) return;
             pressed = null;
-            if (t == Space.Selected && !Settings.TabsOnSide && !t.Pinned) { OpenOmnibox(newTab: false); return; }
-            await Select(t);
+            Go();
         };
         b.MouseMove += (_, e) =>
         {

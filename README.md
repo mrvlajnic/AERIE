@@ -15,8 +15,8 @@ being established.
 
 ![AERIE code audit treemap](docs/windows-port-audit.svg)
 
-*Audit of the current prototype — 63 findings: 19 fixed, 2 blockers, 15 major,
-23 minor. Tiles are coloured by severity and sized by impact; the full map is
+*Audit of the current prototype — 63 findings: 20 fixed, 2 blockers, 15 major,
+22 minor. Tiles are coloured by severity and sized by impact; the full map is
 [docs/windows-port-audit.svg](docs/windows-port-audit.svg).*
 
 ## What works today
@@ -30,7 +30,7 @@ being established.
 
 ## Known blockers
 
-The audit found 63 issues; this batch fixes 19 of them. **Two blockers remain:**
+The audit found 63 issues; this batch fixes 20 of them. **Two blockers remain:**
 
 1. **CRX3 signatures are never verified** — an altered extension package would
    be accepted.
@@ -58,6 +58,9 @@ Fixed in this batch, each verified against the running build:
   10 seconds (the WebKit GC storm), and minimise no longer runs a blocking GC.
 - **Lifecycle** — page-init failures are visible, links arriving during startup
   are queued, and DevTools are off in release unless enabled in settings.
+- **Accessibility** — every button, tab, pin and toggle is now Tab-reachable,
+  activates with Enter or Space, shows a focus glow, and exposes a real UIA
+  Button with an Invoke pattern (checked through the accessibility tree).
 - **CI** — the benchmark job now fails when the WebView2 run crashes or writes
   no report, and the WebKit archive is checked for `WebKit2.dll`.
 

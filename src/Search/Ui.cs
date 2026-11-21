@@ -1,4 +1,7 @@
 using System.Windows;
+using System.Windows.Automation;
+using System.Windows.Automation.Peers;
+using System.Windows.Automation.Provider;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -40,15 +43,37 @@ static class Ui
     public static Border Button(UIElement content, Action click, string? tip = null,
         Thickness? pad = null, Brush? rest = null, Brush? hover = null, double radius = 6)
     {
-        var b = new Border
+        var b = new ClickableBorder
         {
             Child = content, Padding = pad ?? new Thickness(6), CornerRadius = new CornerRadius(radius),
             Background = rest ?? Brushes.Transparent, Cursor = Cursors.Arrow, ToolTip = tip,
+            Activate = click,
         };
+        Accessible(b, tip ?? (content as TextBlock)?.Text);
         b.MouseEnter += (_, _) => b.Background = hover ?? Theme.Hover;
         b.MouseLeave += (_, _) => b.Background = rest ?? Brushes.Transparent;
-        b.MouseLeftButtonUp += (_, e) => { e.Handled = true; click(); };
+        b.MouseLeftButtonUp += (_, e) => { e.Handled = true; b.Activate?.Invoke(); };
         return b;
+    }
+
+    /// Makes a border keyboard- and screen-reader-usable: Tab reaches it,
+    /// Enter or Space presses it, and a glow shows where the focus is.
+    public static void Accessible(ClickableBorder b, string? name)
+    {
+        b.Focusable = true;
+        KeyboardNavigation.SetIsTabStop(b, true);
+        AutomationProperties.SetName(b, string.IsNullOrWhiteSpace(name) ? "Button" : name);
+        b.PreviewKeyDown += (_, e) =>
+        {
+            if (e.Key is Key.Enter or Key.Space) { e.Handled = true; b.Activate?.Invoke(); }
+        };
+        b.MouseLeftButtonDown += (_, _) => b.Focus();
+        b.GotKeyboardFocus += (_, _) => b.Effect = new DropShadowEffect
+        {
+            Color = (Theme.Accent as SolidColorBrush)?.Color ?? Colors.Orange,
+            BlurRadius = 9, ShadowDepth = 0, Opacity = 0.95,
+        };
+        b.LostKeyboardFocus += (_, _) => b.Effect = null;
     }
 
     public static Border IconButton(string glyph, Action click, string? tip = null, double size = 12, Brush? hover = null)
@@ -112,4 +137,22 @@ static class Ui
         }
         return m;
     }
+}
+
+/// A border that behaves like a button: focusable, Tab-reachable, pressed by
+/// Enter or Space, and exposed to assistive tech as a Button with Invoke.
+sealed class ClickableBorder : Border
+{
+    public Action? Activate;
+    protected override AutomationPeer OnCreateAutomationPeer() => new ClickablePeer(this);
+}
+
+sealed class ClickablePeer : FrameworkElementAutomationPeer, IInvokeProvider
+{
+    public ClickablePeer(ClickableBorder owner) : base(owner) { }
+    protected override AutomationControlType GetAutomationControlTypeCore() => AutomationControlType.Button;
+    protected override string GetClassNameCore() => "Button";
+    public override object? GetPattern(PatternInterface pattern) =>
+        pattern == PatternInterface.Invoke ? this : base.GetPattern(pattern);
+    public void Invoke() => ((ClickableBorder)Owner).Activate?.Invoke();
 }
