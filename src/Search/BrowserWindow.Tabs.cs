@@ -38,20 +38,24 @@ sealed partial class BrowserWindow
         if (!Sheet.AnyOpen) t.Page?.Focus();
     }
 
-    /// Exactly one page shows: the space's selected tab. The rest are hidden
-    /// and told to use as little memory as they can.
+    Tab? shownTab;
+
+    /// Exactly one page shows: the space's selected tab. Only the page that
+    /// changes is touched — the rest keep their state.
     void ShowSelected()
     {
         var sel = Space?.Selected;
-        foreach (var t in Spaces.SelectMany(s => s.All))
+        if (shownTab != sel && shownTab?.Page is { } previous)
         {
-            if (t.Page is not { } page) continue;
-            bool show = t == sel;
-            bool was = page.Element.Visibility == Visibility.Visible;
-            page.SetShown(show);
-            if (show) t.Frozen = false;
-            if (was && !show) t.Left = DateTime.Now;
+            previous.SetShown(false);
+            shownTab.Left = DateTime.Now;
         }
+        if (sel?.Page is { } page)
+        {
+            page.SetShown(true);
+            sel.Frozen = false;
+        }
+        shownTab = sel?.Page != null ? sel : null;
         empty.Visibility = sel == null ? Visibility.Visible : Visibility.Collapsed;
     }
 
@@ -71,6 +75,7 @@ sealed partial class BrowserWindow
     public void Sleep(Tab t)
     {
         if (t.Page is not { } page) return;
+        if (shownTab == t) shownTab = null;
         t.Page = null;
         Pages.Children.Remove(page.Element);
         page.Dispose();

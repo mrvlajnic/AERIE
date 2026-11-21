@@ -52,6 +52,10 @@ public class AddressTests
     [InlineData("www.bbc.co.uk", "bbc.co.uk")]
     [InlineData("a.b.example.com", "example.com")]
     [InlineData("me.github.io", "me.github.io")]
+    [InlineData("x.github.io", "x.github.io")]
+    [InlineData("a.b.com.au", "b.com.au")]
+    [InlineData("cdn.foo.co.uk", "foo.co.uk")]
+    [InlineData("foo.s3.amazonaws.com", "foo.s3.amazonaws.com")]
     [InlineData("example.com", "example.com")]
     public void Registrable(string host, string expected) => Assert.Equal(expected, Address.Registrable(host));
 
@@ -376,6 +380,20 @@ public class StoreTests
             Assert.True(Store.Load<Settings>("settings.json").ShieldOn);
         }
         finally { Directory.Delete(Store.Folder, true); Store.Folder = old; }
+    }
+
+    [Fact]
+    public void BackgroundSaveRoundTrips()
+    {
+        var old = Store.Folder;
+        Store.Folder = Path.Combine(Path.GetTempPath(), "storebg-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            Store.SaveInBackground("settings.json", new Settings { ShieldOn = false });
+            Store.Flush(TimeSpan.FromSeconds(5));
+            Assert.False(Store.Load<Settings>("settings.json").ShieldOn);
+        }
+        finally { try { Directory.Delete(Store.Folder, true); } catch { } Store.Folder = old; }
     }
 }
 

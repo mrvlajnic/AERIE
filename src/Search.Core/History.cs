@@ -12,7 +12,8 @@ public sealed class Visit
 public sealed class History
 {
     public List<Visit> Visits { get; set; } = new();
-    public const int Cap = 20000;
+    /// The Mac app keeps 2,000 pages; a 20,000-entry file was written whole.
+    public const int Cap = 2000;
 
     public void Record(string url, string title, DateTime when)
     {

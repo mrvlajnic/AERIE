@@ -1,4 +1,5 @@
 using System.Windows;
+using System.Windows.Automation;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Input;
@@ -35,6 +36,14 @@ sealed partial class BrowserWindow : Window
     readonly DispatcherTimer saveTimer = new() { Interval = TimeSpan.FromSeconds(1.5) };
     readonly DispatcherTimer sleepTimer = new() { Interval = TimeSpan.FromSeconds(10) };
     bool renderQueued, historyDirty, peeking, fullScreen;
+    // The chrome is rebuilt only when its structure changes; page events just
+    // refresh the rows and the address chip in place.
+    string? chromeKey;
+    bool chromeBuilt;
+    readonly Dictionary<Tab, Action> rowUpdates = new();
+    DockPanel? sideHead;
+    Grid? stripGrid;
+    Border? stripChip;
     WindowState stateBeforeFull;
     double swipe;
     DateTime lastSwipe;
@@ -151,6 +160,7 @@ sealed partial class BrowserWindow : Window
 
     void OnTheme()
     {
+        chromeKey = null;   // colours changed: rebuild once
         Background = Theme.Frame;
         Pages.Background = Theme.Ground;
         if (IsLoaded) Native.PaintFrame(this);
@@ -216,29 +226,57 @@ sealed partial class BrowserWindow : Window
     {
         Layout();
         if (Space == null) return;
-        if (Settings.TabsOnSide) BuildSide(); else BuildStrip();
+        var key = ChromeKey();
+        if (!chromeBuilt || key != chromeKey)
+        {
+            chromeKey = key;
+            chromeBuilt = true;
+            if (Settings.TabsOnSide) BuildSide(); else BuildStrip();
+        }
+        else
+        {
+            // Only titles, icons, sound state and the address change per page.
+            foreach (var update in rowUpdates.Values) update();
+            RefreshHeader();
+        }
         var sel = Space.Selected;
         Title = sel == null ? "Search" : sel.Display + " — Search";
         empty.Visibility = sel == null ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    /// What the chrome is made of, not what it says: tab identity and order,
+    /// pins, the current space and selection, layout, audio state. A title or
+    /// URL changing is not in here — those are refreshed in place.
+    string ChromeKey()
+    {
+        var b = new System.Text.StringBuilder(96);
+        b.Append(Settings.TabsOnSide).Append(Settings.SideFolded).Append(peeking).Append(fullScreen);
+        b.Append('|').Append(Space.Id).Append('|')
+            .Append(Space.Selected is { } sel ? System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(sel) : 0);
+        b.Append('|').Append(Spaces.Count);
+        if (Settings.TabsOnSide) b.Append('|').Append(Settings.SideWidth);
+        else b.Append('|').Append((int)ActualWidth);
+        foreach (var t in Space.Pins)
+            b.Append('p').Append(System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(t)).Append(t.Muted ? 1 : 0).Append(t.Audible ? 1 : 0);
+        foreach (var t in Space.Tabs)
+            b.Append('t').Append(System.Runtime.CompilerServices.RuntimeHelpers.GetHashCode(t)).Append(t.Muted ? 1 : 0).Append(t.Audible ? 1 : 0);
+        return b.ToString();
     }
 
     // The column ---------------------------------------------------------
 
     void BuildSide()
     {
+        rowUpdates.Clear();
+        stripGrid = null; stripChip = null;
         side.Children.Clear();
         side.Background = Theme.Frame;
         var dock = new DockPanel { Margin = new Thickness(8, 6, 6, 8), LastChildFill = true };
 
         // The field: where you are, and the way to somewhere else.
         var head = new DockPanel { Margin = new Thickness(0, 0, 0, 8) };
-        var nav = new StackPanel { Orientation = Orientation.Horizontal };
-        nav.Children.Add(Ui.IconButton(Ui.Glyph.Back, Back, "Back (Alt+Left)", 11, Theme.SideHover));
-        nav.Children.Add(Ui.IconButton(Ui.Glyph.Forward, Forward, "Forward (Alt+Right)", 11, Theme.SideHover));
-        nav.Children.Add(Ui.IconButton(Ui.Glyph.Reload, Reload, "Reload (Ctrl+R)", 11, Theme.SideHover));
-        DockPanel.SetDock(nav, Dock.Right);
-        head.Children.Add(nav);
-        head.Children.Add(AddressChip());
+        sideHead = head;
+        FillHead(head);
         DockPanel.SetDock(head, Dock.Top);
         dock.Children.Add(head);
 
@@ -281,6 +319,39 @@ sealed partial class BrowserWindow : Window
         };
         grip.MouseLeftButtonUp += (_, _) => { grip.ReleaseMouseCapture(); Render(); };
         side.Children.Add(grip);
+    }
+
+    /// The address row above the tabs: rebuilt alone when the page changes.
+    void FillHead(DockPanel head)
+    {
+        head.Children.Clear();
+        var nav = new StackPanel { Orientation = Orientation.Horizontal };
+        nav.Children.Add(Ui.IconButton(Ui.Glyph.Back, Back, "Back (Alt+Left)", 11, Theme.SideHover));
+        nav.Children.Add(Ui.IconButton(Ui.Glyph.Forward, Forward, "Forward (Alt+Right)", 11, Theme.SideHover));
+        nav.Children.Add(Ui.IconButton(Ui.Glyph.Reload, Reload, "Reload (Ctrl+R)", 11, Theme.SideHover));
+        DockPanel.SetDock(nav, Dock.Right);
+        head.Children.Add(nav);
+        head.Children.Add(AddressChip());
+    }
+
+    /// The chip alone, for either layout.
+    void RefreshHeader()
+    {
+        if (Settings.TabsOnSide)
+        {
+            if (sideHead != null) FillHead(sideHead);
+            return;
+        }
+        if (stripGrid == null || stripChip == null) return;
+        int at = stripGrid.Children.IndexOf(stripChip);
+        if (at < 0) return;
+        var fresh = AddressChip();
+        fresh.Width = 250;
+        fresh.Margin = new Thickness(6, 0, 8, 0);
+        Grid.SetColumn(fresh, 1);
+        stripGrid.Children.RemoveAt(at);
+        stripGrid.Children.Insert(at, fresh);
+        stripChip = fresh;
     }
 
     static StackPanel Row(params UIElement[] items)
@@ -362,6 +433,8 @@ sealed partial class BrowserWindow : Window
 
     void BuildStrip()
     {
+        rowUpdates.Clear();
+        sideHead = null;
         strip.Background = Theme.Frame;
         var grid = new Grid { Margin = new Thickness(6, 6, 6, 4) };
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });                 // pins
@@ -382,6 +455,8 @@ sealed partial class BrowserWindow : Window
         address.Margin = new Thickness(6, 0, 8, 0);
         Grid.SetColumn(address, 1);
         grid.Children.Add(address);
+        stripGrid = grid;
+        stripChip = address;
 
         var right = new StackPanel { Orientation = Orientation.Horizontal };
         right.Children.Add(Ui.IconButton(Ui.Glyph.Add, () => OpenOmnibox(newTab: true), "New Tab (Ctrl+T)", 11, Theme.SideHover));
@@ -437,7 +512,9 @@ sealed partial class BrowserWindow : Window
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
 
-        grid.Children.Add(Favicon(t));
+        ImageSource? shownIcon = t.Icon;
+        var icon = Favicon(t);
+        grid.Children.Add(icon);
         var title = Ui.Text(t.Display, 13, Theme.Ink);
         if (t.Private) title.FontStyle = FontStyles.Italic;
         title.Margin = new Thickness(9, 0, 4, 0);
@@ -464,6 +541,21 @@ sealed partial class BrowserWindow : Window
         row.MouseLeave += (_, _) => { close.Opacity = t == Space.Selected ? 1 : 0; row.Background = t == Space.Selected ? Theme.SideWash : Brushes.Transparent; };
         Interactive(row, t);
         AllowTabDrop(row, t);
+        rowUpdates[t] = () =>
+        {
+            title.Text = t.Display;
+            row.ToolTip = t.Url;
+            AutomationProperties.SetName(row, t.Display);
+            if (!ReferenceEquals(shownIcon, t.Icon))
+            {
+                shownIcon = t.Icon;
+                var fresh = Favicon(t);
+                Grid.SetColumn(fresh, 0);
+                int at = grid.Children.IndexOf(icon);
+                if (at >= 0) { grid.Children.RemoveAt(at); grid.Children.Insert(at, fresh); }
+                icon = fresh;
+            }
+        };
         return row;
     }
 
@@ -474,7 +566,9 @@ sealed partial class BrowserWindow : Window
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = new GridLength(1, GridUnitType.Star) });
         grid.ColumnDefinitions.Add(new ColumnDefinition { Width = GridLength.Auto });
-        grid.Children.Add(Favicon(t, 14));
+        ImageSource? shownIcon = t.Icon;
+        var icon = Favicon(t, 14);
+        grid.Children.Add(icon);
         var title = Ui.Text(t.Display, 12.5, live ? Theme.Ink : Theme.Muted);
         title.Margin = new Thickness(7, 0, 2, 0);
         if (t.Private) title.FontStyle = FontStyles.Italic;
@@ -493,6 +587,21 @@ sealed partial class BrowserWindow : Window
         chip.MouseLeave += (_, _) => { close.Opacity = t == Space.Selected ? 1 : 0; chip.Background = t == Space.Selected ? Theme.Ground : Brushes.Transparent; };
         Interactive(chip, t);
         AllowTabDrop(chip, t);
+        rowUpdates[t] = () =>
+        {
+            title.Text = t.Display;
+            chip.ToolTip = t.Display + "\n" + t.Url;
+            AutomationProperties.SetName(chip, t.Display);
+            if (!ReferenceEquals(shownIcon, t.Icon))
+            {
+                shownIcon = t.Icon;
+                var fresh = Favicon(t, 14);
+                Grid.SetColumn(fresh, 0);
+                int at = grid.Children.IndexOf(icon);
+                if (at >= 0) { grid.Children.RemoveAt(at); grid.Children.Insert(at, fresh); }
+                icon = fresh;
+            }
+        };
         return chip;
     }
 
@@ -509,6 +618,17 @@ sealed partial class BrowserWindow : Window
         tile.MouseEnter += (_, _) => { if (t != Space.Selected) tile.Background = Theme.SideHover; };
         tile.MouseLeave += (_, _) => tile.Background = t == Space.Selected ? Theme.SidePinLive : Theme.SideTile;
         Interactive(tile, t);
+        ImageSource? shownIcon = t.Icon;
+        rowUpdates[t] = () =>
+        {
+            tile.ToolTip = t.Display;
+            AutomationProperties.SetName(tile, t.Display);
+            if (!ReferenceEquals(shownIcon, t.Icon))
+            {
+                shownIcon = t.Icon;
+                tile.Child = Favicon(t, 16);
+            }
+        };
         return tile;
     }
 
@@ -708,7 +828,7 @@ sealed partial class BrowserWindow : Window
         else { Settings.Width = RestoreBounds.Width; Settings.Height = RestoreBounds.Height; Settings.Left = RestoreBounds.Left; Settings.Top = RestoreBounds.Top; }
         Store.Save("settings.json", Settings);
         SaveSession();
-        Store.Save("history.json", History);
+        Store.Flush(TimeSpan.FromSeconds(3));
     }
 
     public void SaveSettings() => Store.Save("settings.json", Settings);
@@ -718,7 +838,15 @@ sealed partial class BrowserWindow : Window
     void SaveSession()
     {
         if (!Started) return;
-        Store.Save("session.json", new Session { Spaces = Spaces.Select(s => s.Save()).ToList(), Current = Spaces.IndexOf(Space) });
-        if (historyDirty) { historyDirty = false; Store.Save("history.json", History); }
+        Store.SaveInBackground("session.json", new Session { Spaces = Spaces.Select(s => s.Save()).ToList(), Current = Spaces.IndexOf(Space) });
+        if (historyDirty)
+        {
+            historyDirty = false;
+            // A snapshot: the live list keeps changing while the worker writes.
+            Store.SaveInBackground("history.json", new History
+            {
+                Visits = History.Visits.Select(v => new Visit { Url = v.Url, Title = v.Title, Last = v.Last, Count = v.Count }).ToList(),
+            });
+        }
     }
 }

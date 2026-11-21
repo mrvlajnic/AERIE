@@ -4,18 +4,18 @@
 <text x="18" y="58" font-size="12" fill="#555">aidma123/Search-Windows-Port · branch <tspan font-family="Consolas, 'Cascadia Mono', monospace" font-size="11">claude/eloquent-cray-lq0lav</tspan> · commit 149f7d3 · 63 findings from reading every source file and driving the built app</text>
 <rect x="18" y="72" width="203" height="22" rx="4" fill="#2e7d32"/>
 <text x="119" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">build: 0 warnings / 0 errors</text>
-<rect x="227.8" y="72" width="97" height="22" rx="4" fill="#2e7d32"/>
-<text x="276" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">tests: 96/96</text>
-<rect x="332.0" y="72" width="84" height="22" rx="4" fill="#2e7d32"/>
-<text x="374" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">launch: OK</text>
-<rect x="423.0" y="72" width="91" height="22" rx="4" fill="#2e7d32"/>
-<text x="468" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">blockers: 0</text>
-<rect x="520.6" y="72" width="77" height="22" rx="4" fill="#e08a1e"/>
-<text x="559" y="87" font-size="12" font-weight="bold" fill="#241100" text-anchor="middle">major: 15</text>
-<rect x="605.0" y="72" width="77" height="22" rx="4" fill="#d9b40a"/>
-<text x="644" y="87" font-size="12" font-weight="bold" fill="#241f00" text-anchor="middle">minor: 19</text>
-<rect x="689.4" y="72" width="137" height="22" rx="4" fill="#1b5e20"/>
-<text x="758" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">fixed: 25/63 (40%)</text>
+<rect x="227.8" y="72" width="110" height="22" rx="4" fill="#2e7d32"/>
+<text x="283" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">tests: 101/101</text>
+<rect x="345.20000000000005" y="72" width="84" height="22" rx="4" fill="#2e7d32"/>
+<text x="387" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">launch: OK</text>
+<rect x="436.20000000000005" y="72" width="91" height="22" rx="4" fill="#2e7d32"/>
+<text x="482" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">blockers: 0</text>
+<rect x="533.8000000000001" y="72" width="77" height="22" rx="4" fill="#e08a1e"/>
+<text x="573" y="87" font-size="12" font-weight="bold" fill="#241100" text-anchor="middle">major: 10</text>
+<rect x="618.2" y="72" width="77" height="22" rx="4" fill="#d9b40a"/>
+<text x="657" y="87" font-size="12" font-weight="bold" fill="#241f00" text-anchor="middle">minor: 18</text>
+<rect x="702.6" y="72" width="137" height="22" rx="4" fill="#1b5e20"/>
+<text x="771" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">fixed: 31/63 (49%)</text>
 <text x="18" y="110" font-size="11.5" fill="#333"><tspan font-weight="bold" fill="#777">EVIDENCE  </tspan>30 CultureNotFoundExceptions in errors.log → InvariantGlobalization removed → typed example.com, page loaded, session + history written, no errors.</text>
 <rect x="18" y="126" width="13" height="13" rx="3" fill="#c62828" stroke="#666" stroke-width="0.4"/>
 <text x="36" y="136" font-size="11" fill="#444">blocker</text>
@@ -61,7 +61,7 @@
 <text x="1153.2" y="289.9" font-size="12.0" fill="#ffffff" text-anchor="middle">H-wheel (fixed)</text>
 <text x="18" y="364.8222976870845" font-size="15.5" font-weight="bold" fill="#111">Core logic (Search.Core)</text>
 <text x="241" y="363.8222976870845" font-size="11.5" fill="#777">address, history, shielding, storage</text>
-<text x="1222" y="363.8222976870845" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">33% fixed (4/12) · 5 major · 2 minor · 1 info</text>
+<text x="1222" y="363.8222976870845" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">42% fixed (5/12) · 4 major · 2 minor · 1 info</text>
 <rect x="18" y="373.8222976870845" width="1204" height="135" fill="#efefef"/>
 <rect x="18.5" y="374.3" width="189.5" height="134.0" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
 <text x="113.3" y="445.4" font-size="12.0" fill="#ffffff" text-anchor="middle">CRX3 verified (fixed)</text>
@@ -71,8 +71,8 @@
 <text x="380.0" y="444.0" font-size="8.0" fill="#241100" text-anchor="middle">History: frecency wrong</text>
 <rect x="437.6" y="374.3" width="113.3" height="134.0" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
 <text x="494.3" y="445.4" font-size="12.0" fill="#241100" text-anchor="middle">No typo matcher</text>
-<rect x="551.9" y="374.3" width="113.3" height="134.0" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
-<text x="608.6" y="444.0" font-size="8.0" fill="#241100" text-anchor="middle">Public suffix heuristic</text>
+<rect x="551.9" y="374.3" width="113.3" height="134.0" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="608.6" y="443.8" font-size="7.2" fill="#ffffff" text-anchor="middle">Public suffix list (fixed)</text>
 <rect x="666.2" y="374.3" width="113.3" height="134.0" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
 <text x="722.9" y="443.8" font-size="7.2" fill="#241100" text-anchor="middle">Corrupt store = data loss</text>
 <rect x="780.5" y="374.3" width="75.2" height="134.0" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
@@ -123,18 +123,18 @@
 <text x="1158.6" y="756.3" font-size="6.8" fill="#241f00" text-anchor="middle">Find/print/PiP/passwords stubs</text>
 <text x="18" y="846.2052626734039" font-size="15.5" font-weight="bold" fill="#111">Performance (the lag)</text>
 <text x="215" y="845.2052626734039" font-size="11.5" fill="#777">render churn, memory, freezing</text>
-<text x="1222" y="845.2052626734039" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">25% fixed (2/8) · 4 major · 2 minor</text>
+<text x="1222" y="845.2052626734039" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">62% fixed (5/8) · 1 major · 2 minor</text>
 <rect x="18" y="855.2052626734039" width="1204" height="105" fill="#efefef"/>
-<rect x="18.5" y="855.7" width="171.0" height="103.8" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
-<text x="104.0" y="911.7" font-size="12.0" fill="#241100" text-anchor="middle">Strip rebuilt per event</text>
+<rect x="18.5" y="855.7" width="171.0" height="103.8" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="104.0" y="911.4" font-size="11.2" fill="#ffffff" text-anchor="middle">Incremental chrome (fixed)</text>
 <rect x="190.5" y="855.7" width="171.0" height="103.8" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
 <text x="276.0" y="911.7" font-size="12.0" fill="#241100" text-anchor="middle">One WebView2 per tab</text>
 <rect x="362.5" y="855.7" width="171.0" height="103.8" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
 <text x="448.0" y="911.7" font-size="12.0" fill="#ffffff" text-anchor="middle">Freeze once (fixed)</text>
-<rect x="534.5" y="855.7" width="171.0" height="103.8" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
-<text x="620.0" y="910.9" font-size="9.6" fill="#241100" text-anchor="middle">ShowSelected touches all pages</text>
-<rect x="706.5" y="855.7" width="171.0" height="103.8" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
-<text x="792.0" y="911.5" font-size="11.6" fill="#241100" text-anchor="middle">20k history written on UI</text>
+<rect x="534.5" y="855.7" width="171.0" height="103.8" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="620.0" y="911.5" font-size="11.6" fill="#ffffff" text-anchor="middle">ShowSelected diff (fixed)</text>
+<rect x="706.5" y="855.7" width="171.0" height="103.8" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="792.0" y="911.0" font-size="10.0" fill="#ffffff" text-anchor="middle">History off UI thread (fixed)</text>
 <rect x="878.5" y="855.7" width="113.7" height="103.8" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
 <text x="935.3" y="911.7" font-size="12.0" fill="#ffffff" text-anchor="middle">Non-blocking GC</text>
 <rect x="993.2" y="855.7" width="113.7" height="103.8" fill="#d9b40a" stroke="#ffffff" stroke-width="1"/>
@@ -143,18 +143,18 @@
 <text x="1164.7" y="910.0" font-size="7.2" fill="#241f00" text-anchor="middle">Low-end mode may cause lag</text>
 <text x="18" y="1002.9856496226993" font-size="15.5" font-weight="bold" fill="#111">Lifecycle &amp; data</text>
 <text x="171" y="1001.9856496226993" font-size="11.5" fill="#777">startup, pipes, profiles, persistence</text>
-<text x="1222" y="1001.9856496226993" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">40% fixed (2/5) · 2 major · 1 minor</text>
+<text x="1222" y="1001.9856496226993" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">80% fixed (4/5) · 1 major</text>
 <rect x="18" y="1011.9856496226993" width="1204" height="81" fill="#efefef"/>
 <rect x="18.5" y="1012.5" width="257.0" height="80.5" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
 <text x="147.0" y="1056.8" font-size="12.0" fill="#ffffff" text-anchor="middle">Init failures visible</text>
 <rect x="276.5" y="1012.5" width="257.0" height="80.5" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
 <text x="405.0" y="1056.8" font-size="12.0" fill="#ffffff" text-anchor="middle">Startup links queued</text>
-<rect x="534.5" y="1012.5" width="257.0" height="80.5" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
-<text x="663.0" y="1056.8" font-size="12.0" fill="#241100" text-anchor="middle">No job object; orphans</text>
+<rect x="534.5" y="1012.5" width="257.0" height="80.5" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="663.0" y="1056.8" font-size="12.0" fill="#ffffff" text-anchor="middle">Job object: no orphans (fixed)</text>
 <rect x="792.5" y="1012.5" width="257.0" height="80.5" fill="#e08a1e" stroke="#ffffff" stroke-width="1"/>
 <text x="921.0" y="1056.8" font-size="12.0" fill="#241100" text-anchor="middle">Deleted space keeps cookies</text>
-<rect x="1050.5" y="1012.5" width="171.0" height="80.5" fill="#d9b40a" stroke="#ffffff" stroke-width="1"/>
-<text x="1136.0" y="1056.4" font-size="10.8" fill="#241f00" text-anchor="middle">Pipe shared across profiles</text>
+<rect x="1050.5" y="1012.5" width="171.0" height="80.5" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="1136.0" y="1055.5" font-size="8.0" fill="#ffffff" text-anchor="middle">Per-profile single instance (fixed)</text>
 <text x="18" y="1136.475480660131" font-size="15.5" font-weight="bold" fill="#111">Build, CI &amp; packaging</text>
 <text x="215" y="1135.475480660131" font-size="11.5" fill="#777">branch, tests, artefacts</text>
 <text x="1222" y="1135.475480660131" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">12% fixed (1/8) · 6 minor · 1 info</text>
@@ -191,20 +191,20 @@
 <text x="208" y="1398.0427033095116" font-size="11.5" fill="#777">by user impact — not severity</text>
 <rect x="18" y="1408.0427033095116" width="1204" height="90" fill="#ececec"/>
 <rect x="18.5" y="1408.5" width="149.5" height="89.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="93.2" y="1457.1" font-size="12.0" fill="#ffffff" text-anchor="middle">1. Incremental render</text>
+<text x="93.2" y="1455.9" font-size="8.4" fill="#ffffff" text-anchor="middle">1. Profile deletion on delete</text>
 <rect x="169.0" y="1408.5" width="149.5" height="89.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="243.8" y="1456.0" font-size="8.8" fill="#ffffff" text-anchor="middle">2. History off the UI thread</text>
+<text x="243.8" y="1456.0" font-size="8.8" fill="#ffffff" text-anchor="middle">2. One process set per space</text>
 <rect x="319.5" y="1408.5" width="149.5" height="89.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="394.2" y="1457.1" font-size="12.0" fill="#ffffff" text-anchor="middle">3. ShowSelected diff</text>
+<text x="394.2" y="1457.1" font-size="12.0" fill="#ffffff" text-anchor="middle">3. Permissions model</text>
 <rect x="470.0" y="1408.5" width="149.5" height="89.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="544.8" y="1456.4" font-size="10.0" fill="#ffffff" text-anchor="middle">4. Job objects + profiles</text>
+<text x="544.8" y="1457.1" font-size="12.0" fill="#ffffff" text-anchor="middle">4. Downloads panel</text>
 <rect x="620.5" y="1408.5" width="149.5" height="89.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="695.2" y="1457.1" font-size="12.0" fill="#ffffff" text-anchor="middle">5. Public suffix list</text>
+<text x="695.2" y="1456.7" font-size="10.8" fill="#ffffff" text-anchor="middle">5. Crash page / retries</text>
 <rect x="771.0" y="1408.5" width="149.5" height="89.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="845.8" y="1456.4" font-size="10.0" fill="#ffffff" text-anchor="middle">6. Pipe/profile isolation</text>
+<text x="845.8" y="1456.7" font-size="10.8" fill="#ffffff" text-anchor="middle">6. WebKit feature stubs</text>
 <rect x="921.5" y="1408.5" width="149.5" height="89.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="996.2" y="1456.7" font-size="10.8" fill="#ffffff" text-anchor="middle">7. WebKit feature stubs</text>
+<text x="996.2" y="1456.7" font-size="10.8" fill="#ffffff" text-anchor="middle">7. UI integration tests</text>
 <rect x="1072.0" y="1408.5" width="149.5" height="89.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="1146.8" y="1456.7" font-size="10.8" fill="#ffffff" text-anchor="middle">8. UI integration tests</text>
-<text x="620.0" y="1528" font-size="11" fill="#777" text-anchor="middle">audited by reading every source file, building, running 96 tests, and driving the app · 2026-11-21</text>
+<text x="1146.8" y="1456.6" font-size="10.4" fill="#ffffff" text-anchor="middle">8. Packaging: LGPL texts</text>
+<text x="620.0" y="1528" font-size="11" fill="#777" text-anchor="middle">audited by reading every source file, building, running 101 tests, and driving the app · 2026-11-21</text>
 </svg>

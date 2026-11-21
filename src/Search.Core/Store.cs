@@ -29,10 +29,39 @@ public static class Store
     }
 
     /// Written beside and moved into place, so a crash mid-write never leaves half a file.
-    public static void Save<T>(string name, T value)
+    public static void Save<T>(string name, T value) => Write(name, value, Folder);
+
+    static readonly object queue = new();
+    static Task writing = Task.CompletedTask;
+
+    /// Serializes and writes on a worker, one file at a time, so a large
+    /// history never blocks the UI. `value` must be a snapshot the caller will
+    /// not touch again.
+    public static void SaveInBackground<T>(string name, T value)
     {
-        Directory.CreateDirectory(Folder);
-        var path = Path.Combine(Folder, name);
+        var folder = Folder;
+        lock (queue)
+        {
+            writing = writing.ContinueWith(_ =>
+            {
+                try { Write(name, value, folder); }
+                catch { /* one failed save must not stop the queue */ }
+            }, CancellationToken.None, TaskContinuationOptions.None, TaskScheduler.Default);
+        }
+    }
+
+    /// Waits for queued background saves: on exit, and in tests.
+    public static void Flush(TimeSpan timeout)
+    {
+        Task wait;
+        lock (queue) wait = writing;
+        try { wait.Wait(timeout); } catch { }
+    }
+
+    static void Write<T>(string name, T value, string folder)
+    {
+        Directory.CreateDirectory(folder);
+        var path = Path.Combine(folder, name);
         var temp = path + ".tmp";
         File.WriteAllText(temp, JsonSerializer.Serialize(value, Options));
         File.Move(temp, path, true);

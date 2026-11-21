@@ -15,8 +15,8 @@ being established.
 
 ![AERIE code audit treemap](docs/windows-port-audit.svg)
 
-*Audit of the current prototype — 63 findings: **25 fixed (40%)**, no blockers,
-15 major, 19 minor. Section percentages show how much of each area is fixed.
+*Audit of the current prototype — 63 findings: **31 fixed (49%)**, no blockers,
+10 major, 18 minor. Section percentages show how much of each area is fixed.
 Tiles are coloured by severity and sized by impact; the full map is
 [docs/windows-port-audit.svg](docs/windows-port-audit.svg).*
 
@@ -31,14 +31,15 @@ Tiles are coloured by severity and sized by impact; the full map is
 
 ## Known issues
 
-The audit found 63 issues; **25 are fixed (40%) and no blockers remain.**
+The audit found 63 issues; **31 are fixed (49%) and no blockers remain.**
 
 The largest remaining items:
 
-- **Rendering** — the tab strip is still rebuilt on every page event.
-- **History** — a 20k-entry file is written on the UI thread.
-- **Lifecycle** — no job objects, and a deleted space leaves its profile behind.
-- **Shield** — the public-suffix heuristic can misclassify a site boundary.
+- **Profiles** — deleting a space still leaves its profile and cookies on disk.
+- **Permissions** — WebView2 permission requests have no per-site model yet.
+- **Downloads** — no host handling: no panel, path choice or pause/resume.
+- **Crashes** — a failed renderer reloads instead of showing a crash page.
+- **Memory** — one WebView2 per tab, and a process set per fresh space.
 - **WebKit** — find, print, picture-in-picture and passwords remain stubs.
 - **UI tests** — CI still has none.
 
@@ -61,6 +62,14 @@ Fixed in this batch, each verified against the running build:
   concurrent.
 - **Performance** — background tabs are frozen once per rest instead of every
   10 seconds (the WebKit GC storm), and minimise no longer runs a blocking GC.
+- **Rendering** — the chrome is rebuilt only when its structure changes; titles,
+  icons, audio and the address update in place, and a tab switch touches only
+  the two pages involved.
+- **History** — snapshots (2,000-entry cap) are serialized on a worker and
+  flushed on exit, so a large history no longer blocks the UI thread.
+- **Orphans** — a kill-on-close job object ties WebView2/WebKit children to the
+  app, and the single-instance mutex and pipe are keyed by data folder.
+- **Shield** — a compact public-suffix list replaces the two-letter heuristic.
 - **Lifecycle** — page-init failures are visible, links arriving during startup
   are queued, and DevTools are off in release unless enabled in settings.
 - **Accessibility** — every button, tab, pin and toggle is now Tab-reachable,

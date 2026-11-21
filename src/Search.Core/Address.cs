@@ -136,18 +136,56 @@ public static class Address
         return string.IsNullOrEmpty(path) || path == "/" ? bare : bare + path;
     }
 
-    /// The registrable part of a host, closely enough to tell first from third parties.
+    /// The registrable part of a host, closely enough to tell first from third
+    /// parties. A compact public-suffix list: the common multi-label ccTLDs and
+    /// the private suffixes people publish under.
     public static string Registrable(string host)
     {
         host = host.ToLowerInvariant().TrimEnd('.');
         var labels = host.Split('.');
         if (labels.Length <= 2) return host;
         if (labels.Length == 4 && labels.All(l => byte.TryParse(l, out _))) return host;
-        var lastTwo = labels[^2] + "." + labels[^1];
-        bool secondLevel = SecondLevel.Contains(lastTwo) || (labels[^1].Length == 2 && SecondLevelLabels.Contains(labels[^2]));
-        return secondLevel ? string.Join('.', labels[^3..]) : lastTwo;
+        int longest = Math.Min(3, labels.Length - 1);
+        for (int take = longest; take >= 2; take--)
+        {
+            var suffix = string.Join('.', labels[^take..]);
+            if (MultiLabel.Contains(suffix) || PrivateSuffix.Contains(suffix))
+                return string.Join('.', labels[^(take + 1)..]);
+        }
+        return labels[^2] + "." + labels[^1];
     }
 
-    static readonly HashSet<string> SecondLevelLabels = new() { "co", "com", "net", "org", "gov", "ac", "edu", "ne", "or", "go" };
-    static readonly HashSet<string> SecondLevel = new() { "github.io", "blogspot.com", "herokuapp.com", "vercel.app", "netlify.app", "pages.dev", "web.app", "firebaseapp.com", "azurewebsites.net", "cloudfront.net" };
+    static readonly HashSet<string> MultiLabel = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "co.uk", "org.uk", "ac.uk", "gov.uk", "me.uk", "ltd.uk", "plc.uk",
+        "com.au", "net.au", "org.au", "edu.au", "gov.au", "id.au",
+        "co.nz", "net.nz", "org.nz", "govt.nz",
+        "co.jp", "ne.jp", "or.jp", "ac.jp", "go.jp",
+        "co.kr", "or.kr", "ne.kr",
+        "com.cn", "net.cn", "org.cn", "gov.cn",
+        "com.hk", "org.hk", "net.hk",
+        "com.tw", "org.tw", "net.tw",
+        "com.sg", "net.sg", "org.sg",
+        "co.in", "net.in", "org.in", "gov.in",
+        "co.za", "org.za", "net.za",
+        "com.br", "net.br", "org.br",
+        "com.mx", "org.mx",
+        "com.tr", "net.tr", "org.tr",
+        "co.il", "org.il",
+        "com.ar", "com.co", "com.pe", "com.ve",
+        "co.id", "or.id", "web.id",
+        "com.my", "com.ph", "com.vn", "com.pk",
+        "co.th", "in.th",
+        "com.eg", "com.sa", "com.ua",
+    };
+
+    /// The PSL's private section, abridged.
+    static readonly HashSet<string> PrivateSuffix = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "github.io", "githubusercontent.com", "blogspot.com", "herokuapp.com",
+        "vercel.app", "netlify.app", "pages.dev", "web.app", "firebaseapp.com",
+        "azurewebsites.net", "cloudfront.net", "s3.amazonaws.com",
+        "appspot.com", "workers.dev", "pages.github.com", "gitlab.io",
+        "repl.co", "glitch.me", "onrender.com", "fly.dev", "deno.dev",
+    };
 }

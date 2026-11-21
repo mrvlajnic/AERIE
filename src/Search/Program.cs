@@ -8,17 +8,22 @@ namespace Search;
 /// with Search as the default browser) hands its addresses to the first.
 static class Program
 {
-    static readonly string Pipe = "SearchBrowser-" + Environment.UserName;
-
     [STAThread]
     static int Main(string[] args)
     {
-        using var single = new Mutex(true, @"Local\SearchBrowser-" + Environment.UserName, out bool first);
-        if (!first && !args.Any(a => a.StartsWith("--data=")))
+        // --data=folder: a whole world of its own. The single-instance name is
+        // derived from it, so two profiles can run side by side and only the
+        // same profile hands links over.
+        foreach (var a in args) if (a.StartsWith("--data=")) Store.Folder = Path.GetFullPath(a[7..]);
+        var key = Convert.ToHexString(System.Security.Cryptography.SHA256.HashData(
+            System.Text.Encoding.UTF8.GetBytes(Store.Folder)))[..10];
+        var pipe = "SearchBrowser-" + Environment.UserName + "-" + key;
+        using var single = new Mutex(true, @"Local\SearchBrowser-" + Environment.UserName + "-" + key, out bool first);
+        if (!first)
         {
             try
             {
-                using var client = new NamedPipeClientStream(".", Pipe, PipeDirection.Out);
+                using var client = new NamedPipeClientStream(".", pipe, PipeDirection.Out);
                 client.Connect(3000);
                 using var w = new StreamWriter(client);
                 w.Write(string.Join("\n", args.Length == 0 ? new[] { "" } : args));
@@ -27,9 +32,8 @@ static class Program
             catch { /* the first one is gone; carry on as the first */ }
         }
 
-        // --data=folder: a profile of its own (benchmarks, tests), and no single-instance hand-off.
-        foreach (var a in args) if (a.StartsWith("--data=")) Store.Folder = Path.GetFullPath(a[7..]);
         Directory.CreateDirectory(Store.Folder);
+        Job.Hold();
         var app = new Application { ShutdownMode = ShutdownMode.OnMainWindowClose };
         app.DispatcherUnhandledException += (_, e) =>
         {
@@ -48,11 +52,11 @@ static class Program
 #endif
         };
         var window = new BrowserWindow(args);
-        Listen(window);
+        Listen(window, pipe);
         return app.Run(window);
     }
 
-    static void Listen(BrowserWindow window)
+    static void Listen(BrowserWindow window, string pipe)
     {
         var thread = new Thread(() =>
         {
@@ -60,7 +64,7 @@ static class Program
             {
                 try
                 {
-                    using var server = new NamedPipeServerStream(Pipe, PipeDirection.In, 1);
+                    using var server = new NamedPipeServerStream(pipe, PipeDirection.In, 1);
                     server.WaitForConnection();
                     using var r = new StreamReader(server);
                     var lines = r.ReadToEnd().Split('\n', StringSplitOptions.RemoveEmptyEntries);
