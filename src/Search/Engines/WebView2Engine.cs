@@ -549,6 +549,7 @@ sealed class WebView2Extensions : IExtensionHost
         var o = engine.Env.CreateCoreWebView2ControllerOptions();
         o.ProfileName = profile.ProfileName;
         await view.EnsureCoreWebView2Async(engine.Env, o);
+        view.Focus();   // the popup is the reason it opened: take the keyboard
         view.CoreWebView2.DocumentTitleChanged += (_, _) => { if (view.CoreWebView2.DocumentTitle.Length > 0) w.Title = view.CoreWebView2.DocumentTitle; };
         view.CoreWebView2.NewWindowRequested += (_, e) => { e.Handled = true; browser.Open(e.Uri); };
         view.CoreWebView2.WindowCloseRequested += (_, _) => w.Close();
@@ -569,7 +570,13 @@ static class PopupWindow
         var at = browser.Anchor(400);
         w.Left = at.X + 160; w.Top = at.Y - 30;
         w.SourceInitialized += (_, _) => Native.PaintFrame(w);
-        w.Deactivated += (_, _) => { try { w.Close(); } catch { } };
+        var opened = DateTime.UtcNow;
+        w.Deactivated += (_, _) =>
+        {
+            // Showing the window can bounce activation once; don't close on that.
+            if ((DateTime.UtcNow - opened).TotalMilliseconds < 300) return;
+            try { w.Close(); } catch { }
+        };
         return w;
     }
 }

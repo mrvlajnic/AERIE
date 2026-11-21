@@ -15,8 +15,8 @@ being established.
 
 ![AERIE code audit treemap](docs/windows-port-audit.svg)
 
-*Audit of the current prototype — 63 findings: **41 fixed (65%)**, no blockers,
-no majors, 18 minor. Section percentages show how much of each area is fixed.
+*Audit of the current prototype — 63 findings: **47 fixed (75%)**, no blockers,
+no majors, 12 minor. Section percentages show how much of each area is fixed.
 Tiles are coloured by severity and sized by impact; the full map is
 [docs/windows-port-audit.svg](docs/windows-port-audit.svg).*
 
@@ -31,15 +31,17 @@ Tiles are coloured by severity and sized by impact; the full map is
 
 ## Known issues
 
-The audit found 63 issues; **41 are fixed (65%), with no blockers and no majors
+The audit found 63 issues; **47 are fixed (75%), with no blockers and no majors
 left.**
 
 The largest remaining items:
 
 - **Process sets** — each fresh space runs its own WebView2 profile and process set.
 - **WebKit** — find, print, picture-in-picture and passwords remain stubs.
-- **UI tests** — CI still has none.
-- **Packaging** — the WebKit bundle lacks the LGPL license texts.
+- **Interaction tests** — CI has a UIA startup smoke; typing and key handling
+  are still checked by hand.
+- **Distribution** — no installer or code signing yet.
+- **Name** — the binary, namespaces and settings folder still say "Search".
 
 Fixed in this batch, each verified against the running build:
 
@@ -88,6 +90,12 @@ Fixed in this batch, each verified against the running build:
   exact port), `__search/runtime.js` is self-only, the background page needs a
   per-run token, and web-accessible files honour their `matches`. Dormant while
   the WebKit extension host stays disabled, but safe if it is ever re-enabled.
+- **Extension popups** — focused when they open, and a 300 ms grace stops the
+  activation bounce from closing them immediately.
+- **CI and packaging** — the WebKit archive's SHA-256 is pinned and verified,
+  its LGPL/BSD texts ship under `THIRD-PARTY-LICENSES/`, releases wait for the
+  memory benchmark, and every build runs a UIA smoke: window, page title,
+  accessible buttons, and an empty `errors.log`.
 - **Lifecycle** — page-init failures are visible, links arriving during startup
   are queued, and DevTools are off in release unless enabled in settings.
 - **Accessibility** — every button, tab, pin and toggle is now Tab-reachable,

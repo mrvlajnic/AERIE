@@ -7,12 +7,11 @@ on:
   pull_request:
   workflow_dispatch:
 
-permissions:
-  contents: write
-
 env:
-  # WebKit for Windows: the WinCairo build Playwright publishes.
+  # WebKit for Windows: the WinCairo build Playwright publishes, pinned by
+  # revision and by the SHA-256 of the archive itself.
   WEBKIT_REVISION: "2395"
+  WEBKIT_SHA256: "9707661aeefebffe464ba471e81149b330f242efdb2101c6bc288f4fe9da35f6"
 
 jobs:
   build:
@@ -41,11 +40,19 @@ jobs:
             Rename-Item "out/$rid-standalone/Search.exe" "Search-$rid-standalone.exe"
           }
 
+      - name: Smoke test
+        shell: pwsh
+        run: |
+          $data = Join-Path $env:RUNNER_TEMP "smoke"
+          ./tools/smoke.ps1 -Exe "out/win-x64/Search-win-x64.exe" -Data $data
+
       - name: Package the WebKit build
         shell: pwsh
         run: |
           $zip = "$env:RUNNER_TEMP\webkit-win64.zip"
           Invoke-WebRequest "https://cdn.playwright.dev/dbazure/download/playwright/builds/webkit/$env:WEBKIT_REVISION/webkit-win64.zip" -OutFile $zip
+          $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant()
+          if ($hash -ne $env:WEBKIT_SHA256) { throw "WebKit archive hash $hash does not match the pinned $env:WEBKIT_SHA256" }
           $dir = "out/Search-WebKit-win-x64"
           dotnet publish src/Search -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o $dir
           Expand-Archive $zip -DestinationPath $dir -Force
@@ -54,6 +61,14 @@ jobs:
           if (-not (Test-Path "$dir/WebKit2.dll")) { throw "WebKit2.dll is missing from the downloaded archive" }
           # Playwright's own test shell isn't part of Search.
           Remove-Item "$dir/Playwright.exe", "$dir/protocol.json" -ErrorAction SilentlyContinue
+          # The archive's own licenses (LGPL-2.1 and BSD-style texts) ship
+          # beside the browser; ours go at the root afterwards.
+          $lic = Join-Path $dir "THIRD-PARTY-LICENSES"
+          New-Item -ItemType Directory -Force $lic | Out-Null
+          Get-ChildItem $dir -Recurse -File -Include "LICENSE*", "COPYING*", "NOTICE*" |
+            Where-Object { $_.FullName -notlike "$lic*" } |
+            ForEach-Object { Copy-Item $_.FullName (Join-Path $lic $_.Name) -Force }
+          if (-not (Get-ChildItem $lic -ErrorAction SilentlyContinue)) { throw "the WebKit archive carries no license files" }
           Copy-Item LICENSE, THIRD-PARTY-NOTICES.md $dir
           Compress-Archive "$dir/*" "out/Search-WebKit-win-x64.zip"
           Get-ChildItem out -Recurse -Include *.exe, *.zip -Depth 1 | Format-Table Name, Length
@@ -72,15 +87,6 @@ jobs:
           path: |
             out/win-x64/Search-win-x64.exe
             out/Search-WebKit-win-x64/**
-
-      - name: Release
-        if: startsWith(github.ref, 'refs/tags/v')
-        uses: softprops/action-gh-release@v2
-        with:
-          files: |
-            out/win-*/*.exe
-            out/Search-WebKit-win-x64.zip
-          generate_release_notes: true
 
   # The same sites in each engine, on the same machine: what the whole
   # browser (every process it starts) holds in memory.
@@ -158,3 +164,21 @@ jobs:
         with:
           name: memory-benchmark
           path: bench/
+  # A tag releases only after the engine has also passed its benchmark.
+  release:
+    needs: [build, memory]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: Search-windows
+          path: artifacts
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            artifacts/**/*.exe
+            artifacts/**/*.zip
+          generate_release_notes: true

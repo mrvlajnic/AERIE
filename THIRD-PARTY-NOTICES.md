@@ -10,7 +10,9 @@ with your own build of the same revision.
 
 - WebKit source: https://github.com/WebKit/WebKit
 - Playwright's WebKit build and patches: https://github.com/microsoft/playwright/tree/main/browser_patches/webkit
-- The build used is the `webkit-win64.zip` of Playwright WebKit revision named in `.github/workflows/build.yml`.
+- The build used is the `webkit-win64.zip` of Playwright WebKit revision named in `.github/workflows/build.yml`, pinned there by SHA-256.
+- The LGPL and BSD texts that ship with that archive are included in the WebKit
+  download under `THIRD-PARTY-LICENSES/`.
 
 The build also carries the libraries WebKit depends on (ICU, cairo, curl,
 libxml2, libpng, libjpeg-turbo, libwebp, harfbuzz, OpenSSL/LibreSSL, sqlite,
