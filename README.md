@@ -15,8 +15,8 @@ being established.
 
 ![AERIE code audit treemap](docs/windows-port-audit.svg)
 
-*Audit of the current prototype — 63 findings: **51 fixed (81%)**, no blockers,
-no majors, 8 minor. Section percentages show how much of each area is fixed.
+*Audit of the current prototype — 63 findings: **54 fixed (86%)**, no blockers,
+no majors, 5 minor. Section percentages show how much of each area is fixed.
 Tiles are coloured by severity and sized by impact; the full map is
 [docs/windows-port-audit.svg](docs/windows-port-audit.svg).*
 
@@ -31,7 +31,7 @@ Tiles are coloured by severity and sized by impact; the full map is
 
 ## Known issues
 
-The audit found 63 issues; **51 are fixed (81%), with no blockers and no majors
+The audit found 63 issues; **54 are fixed (86%), with no blockers and no majors
 left.**
 
 The largest remaining items:
@@ -40,7 +40,8 @@ The largest remaining items:
 - **WebKit** — find, print, picture-in-picture and passwords remain stubs.
 - **Interaction tests** — CI has a UIA startup smoke; typing and key handling
   are still checked by hand.
-- **Distribution** — no installer or code signing yet.
+- **Distribution** — a per-user installer is built, but there is no code
+  signing or auto-update yet.
 - **Name** — the binary, namespaces and settings folder still say "Search".
 
 Fixed in this batch, each verified against the running build:
@@ -90,6 +91,12 @@ Fixed in this batch, each verified against the running build:
   the walls between them. The Settings toggle (`processPerSite`) opts in.
 - **Pop-ups** — a window a page opens without a click is refused and reported;
   a clicked one becomes a tab.
+- **Lean mode** — now opt-in (`lean`): the default keeps GPU rasterization, so
+  the low-memory mode can no longer be the cause of a stutter.
+- **WebKit extensions** — `permissions` answers from the manifest instead of
+  "yes" to everything, and alarms persist to `alarms.json` and re-arm after a
+  restart.
+- **Installer** — Inno Setup builds a per-user installer in CI (unsigned).
 - **Storage** — a damaged JSON file is moved aside as
   `*.unreadable-<time>-<id>` (and logged) instead of being overwritten; reads
   accept any property casing, and every write uses a unique temp file.

@@ -475,5 +475,8 @@ public class ScriptTests
         Assert.Contains("office-reader", Scripts.Reader("light"));
         Assert.Contains("requestPictureInPicture", Scripts.FloatCall("toggle"));
         Assert.Contains("postMessage", Scripts.Hider.Value);
+        // The runtime answers from the manifest, not "yes" to everything.
+        Assert.Contains("optional_permissions", Scripts.ExtensionApi.Value);
+        Assert.DoesNotContain("contains: local(function () { return true; })", Scripts.ExtensionApi.Value);
     }
 }

@@ -99,6 +99,16 @@ sealed class WebKitExtensions : IExtensionHost
         var dnr = Path.Combine(DataFolder(r.Id), "dnr.json");
         if (File.Exists(dnr)) try { l.Dnr = JsonNode.Parse(File.ReadAllText(dnr)) as JsonObject ?? l.Dnr; } catch { }
         loaded[r.Id] = l;
+        var alarms = Path.Combine(DataFolder(r.Id), "alarms.json");
+        if (File.Exists(alarms))
+            try
+            {
+                var array = JsonNode.Parse(File.ReadAllText(alarms)) as JsonArray ?? new JsonArray();
+                foreach (var node in array)
+                    if (node is JsonObject o && o["name"]?.GetValue<string>() is { Length: > 0 } name)
+                        Alarm(l, name, o);
+            }
+            catch { }
         await CompileRules(l);
         if (m.HasBackground)
         {
@@ -438,11 +448,13 @@ sealed class WebKitExtensions : IExtensionHost
                 var name = a["name"]?.GetValue<string>() ?? "";
                 bool had = l.Alarms.Remove(name, out var timer);
                 timer?.Stop(); l.AlarmInfo.Remove(name);
+                SaveAlarms(l);
                 return had;
             }
             case "alarms.clearAll":
                 foreach (var t in l.Alarms.Values) t.Stop();
                 l.Alarms.Clear(); l.AlarmInfo.Clear();
+                SaveAlarms(l);
                 return true;
 
             // action -------------------------------------------------------------
@@ -744,15 +756,18 @@ sealed class WebKitExtensions : IExtensionHost
     {
         if (l.Alarms.Remove(name, out var old)) old.Stop();
         double? period = info["periodInMinutes"]?.GetValue<double>();
-        double delayMs = info["when"]?.GetValue<double>() is double when
-            ? Math.Max(0, when - DateTimeOffset.Now.ToUnixTimeMilliseconds())
+        double now = DateTimeOffset.Now.ToUnixTimeMilliseconds();
+        // when/delay for a new alarm; scheduledTime when it was restored.
+        double delayMs = info["when"]?.GetValue<double>() is double when ? Math.Max(0, when - now)
+            : info["scheduledTime"]?.GetValue<double>() is double at ? Math.Max(0, at - now)
             : (info["delayInMinutes"]?.GetValue<double>() ?? period ?? 0) * 60000;
         // Chrome's floor is 30 seconds; so is this one.
         delayMs = Math.Max(delayMs, 30000);
-        var scheduled = DateTimeOffset.Now.ToUnixTimeMilliseconds() + delayMs;
+        var scheduled = now + delayMs;
         var record = new JsonObject { ["name"] = name, ["scheduledTime"] = scheduled };
         if (period != null) record["periodInMinutes"] = period;
         l.AlarmInfo[name] = record;
+        SaveAlarms(l);
         var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(delayMs) };
         timer.Tick += (_, _) =>
         {
@@ -761,11 +776,25 @@ sealed class WebKitExtensions : IExtensionHost
             {
                 timer.Interval = TimeSpan.FromMinutes(Math.Max(p, 0.5));
                 record["scheduledTime"] = DateTimeOffset.Now.ToUnixTimeMilliseconds() + timer.Interval.TotalMilliseconds;
+                SaveAlarms(l);
             }
-            else { timer.Stop(); l.Alarms.Remove(name); l.AlarmInfo.Remove(name); }
+            else { timer.Stop(); l.Alarms.Remove(name); l.AlarmInfo.Remove(name); SaveAlarms(l); }
         };
         l.Alarms[name] = timer;
         timer.Start();
+    }
+
+    /// Chrome alarms survive a restart; so do these.
+    void SaveAlarms(Loaded l)
+    {
+        try
+        {
+            var folder = DataFolder(l.Record.Id);
+            Directory.CreateDirectory(folder);
+            File.WriteAllText(Path.Combine(folder, "alarms.json"),
+                new JsonArray(l.AlarmInfo.Values.Select(v => (JsonNode)v.DeepClone()).ToArray()).ToJsonString());
+        }
+        catch { }
     }
 
     static IEnumerable<string> EnabledRulesets(Loaded l) =>

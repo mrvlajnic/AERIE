@@ -120,8 +120,9 @@ public sealed class Settings
     public int MaxAwakeTabs { get; set; } = 10;
     /// Background tabs are frozen this many seconds after you leave them.
     public int FreezeSeconds { get; set; } = 20;
-    /// Chromium's low-memory mode. Smaller caches; gradients can band a little.
-    public bool Lean { get; set; } = true;
+    /// Chromium's low-memory mode. Smaller caches and, on some builds, software
+    /// rendering; opt in on a low-memory PC.
+    public bool Lean { get; set; }
     /// Same-site pages in one renderer. Less memory, weaker isolation.
     public bool ProcessPerSite { get; set; }
     /// "webkit", "webview2", or empty for whichever the build carries.

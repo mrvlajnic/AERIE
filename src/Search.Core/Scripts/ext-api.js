@@ -348,8 +348,17 @@ var __searchMakeChrome = function (ctx, call) {
   };
 
   var permissions = {
-    contains: local(function () { return true; }),
-    request: local(function () { return true; }),
+    // What the manifest declares, not "yes" to everything: an extension that
+    // checks for a permission it never asked for gets the truth.
+    contains: local(function (req) {
+      var have = (ctx.manifest.permissions || []).concat(ctx.manifest.optional_permissions || []);
+      var origins = (ctx.manifest.host_permissions || []).concat(ctx.manifest.optional_host_permissions || []);
+      var ps = (req && req.permissions) || [], os = (req && req.origins) || [];
+      for (var i = 0; i < ps.length; i++) if (have.indexOf(ps[i]) < 0) return false;
+      for (var j = 0; j < os.length; j++) if (origins.indexOf(os[j]) < 0) return false;
+      return true;
+    }),
+    request: local(function (req) { return permissions.contains(req); }),
     remove: local(function () { return false; }),
     getAll: local(function () { return { permissions: ctx.manifest.permissions || [], origins: (ctx.manifest.host_permissions || []) }; }),
     onAdded: Event(null), onRemoved: Event(null),

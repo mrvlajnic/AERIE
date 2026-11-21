@@ -46,6 +46,16 @@ jobs:
           $data = Join-Path $env:RUNNER_TEMP "smoke"
           ./tools/smoke.ps1 -Exe "out/win-x64/Search-win-x64.exe" -Data $data
 
+      - name: Installer
+        shell: pwsh
+        run: |
+          choco install innosetup --no-progress -y
+          $iscc = Get-ChildItem "C:\Program Files*\Inno Setup*\ISCC.exe" -ErrorAction SilentlyContinue |
+            Select-Object -First 1
+          if (-not $iscc) { throw "ISCC.exe not found after installing Inno Setup" }
+          $version = (Get-Content VERSION -Raw).Trim()
+          & $iscc.FullName "/DAppVersion=$version" "installer\search.iss"
+
       - name: Package the WebKit build
         shell: pwsh
         run: |
@@ -78,6 +88,7 @@ jobs:
           name: Search-windows
           path: |
             out/win-*/*.exe
+            out/Search-setup.exe
             out/Search-WebKit-win-x64.zip
 
       - uses: actions/upload-artifact@v4
