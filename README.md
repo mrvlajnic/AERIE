@@ -15,8 +15,8 @@ being established.
 
 ![AERIE code audit treemap](docs/windows-port-audit.svg)
 
-*Audit of the current prototype — 63 findings: **40 fixed (63%)**, no blockers,
-1 major, 18 minor. Section percentages show how much of each area is fixed.
+*Audit of the current prototype — 63 findings: **41 fixed (65%)**, no blockers,
+no majors, 18 minor. Section percentages show how much of each area is fixed.
 Tiles are coloured by severity and sized by impact; the full map is
 [docs/windows-port-audit.svg](docs/windows-port-audit.svg).*
 
@@ -31,13 +31,13 @@ Tiles are coloured by severity and sized by impact; the full map is
 
 ## Known issues
 
-The audit found 63 issues; **40 are fixed (63%) and no blockers remain.**
+The audit found 63 issues; **41 are fixed (65%), with no blockers and no majors
+left.**
 
 The largest remaining items:
 
 - **Process sets** — each fresh space runs its own WebView2 profile and process set.
-- **WebKit** — find, print, picture-in-picture and passwords remain stubs, and
-  its loopback extension checks would need work before that host is re-enabled.
+- **WebKit** — find, print, picture-in-picture and passwords remain stubs.
 - **UI tests** — CI still has none.
 - **Packaging** — the WebKit bundle lacks the LGPL license texts.
 
@@ -84,6 +84,10 @@ Fixed in this batch, each verified against the running build:
 - **Storage** — a damaged JSON file is moved aside as
   `*.unreadable-<time>-<id>` (and logged) instead of being overwritten; reads
   accept any property casing, and every write uses a unique temp file.
+- **WebKit loopback** — origins are compared exactly (scheme, 127.0.0.1/localhost,
+  exact port), `__search/runtime.js` is self-only, the background page needs a
+  per-run token, and web-accessible files honour their `matches`. Dormant while
+  the WebKit extension host stays disabled, but safe if it is ever re-enabled.
 - **Lifecycle** — page-init failures are visible, links arriving during startup
   are queued, and DevTools are off in release unless enabled in settings.
 - **Accessibility** — every button, tab, pin and toggle is now Tab-reachable,

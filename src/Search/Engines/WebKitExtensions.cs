@@ -104,7 +104,7 @@ sealed class WebKitExtensions : IExtensionHost
         {
             l.Background = new WebKitPage(engine, null, IntPtr.Zero, r.Id);
             l.Background.MakeView(engine.Parking);
-            l.Background.Navigate(l.Base + "__search/background.html");
+            l.Background.Navigate(l.Server.BackgroundUrl);
         }
         Changed();
     }

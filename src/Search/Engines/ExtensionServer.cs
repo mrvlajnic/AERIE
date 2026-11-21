@@ -1,5 +1,6 @@
 using System.Net;
 using System.Net.Sockets;
+using System.Security.Cryptography;
 using System.Text;
 using Search.Core.Extensions;
 
@@ -19,6 +20,10 @@ sealed class ExtensionServer : IDisposable
     readonly CancellationTokenSource stop = new();
     public int Port { get; }
     public string Base => $"http://127.0.0.1:{Port}/";
+    /// The only way to open the background page: it runs the extension's APIs
+    /// as the browser, so it is not a document any page may navigate to.
+    public string Token { get; } = Convert.ToHexString(RandomNumberGenerator.GetBytes(16)).ToLowerInvariant();
+    public string BackgroundUrl => Base + "__search/background.html?key=" + Token;
 
     public ExtensionServer(Manifest manifest, int preferredPort, Func<string, string> runtime)
     {
@@ -42,7 +47,8 @@ sealed class ExtensionServer : IDisposable
         {
             TcpClient client;
             try { client = await listener.AcceptTcpClientAsync(stop.Token); }
-            catch { return; }
+            catch when (stop.IsCancellationRequested) { return; }
+            catch { await Task.Delay(250); continue; }
             _ = Task.Run(() => Serve(client));
         }
     }
@@ -59,8 +65,13 @@ sealed class ExtensionServer : IDisposable
                 var lines = head.Split("\r\n");
                 var parts = lines[0].Split(' ');
                 if (parts.Length < 2 || (parts[0] != "GET" && parts[0] != "HEAD")) { await Respond(stream, 405, "text/plain", Encoding.UTF8.GetBytes("no"), false); return; }
-                var headers = lines.Skip(1).Select(l => l.Split(':', 2)).Where(p => p.Length == 2)
-                    .ToDictionary(p => p[0].Trim().ToLowerInvariant(), p => p[1].Trim());
+                // Last wins rather than throwing on a duplicate header.
+                var headers = new Dictionary<string, string>();
+                foreach (var line in lines.Skip(1))
+                {
+                    var p = line.Split(':', 2);
+                    if (p.Length == 2) headers[p[0].Trim().ToLowerInvariant()] = p[1].Trim();
+                }
                 var target = parts[1];
                 var query = "";
                 int q = target.IndexOf('?');
@@ -70,12 +81,18 @@ sealed class ExtensionServer : IDisposable
 
                 if (path == "__search/runtime.js")
                 {
+                    // Only an extension page (or the browser) may load the runtime.
+                    if (!FromSelf(headers)) { await Respond(stream, 403, "text/plain", Encoding.UTF8.GetBytes("not the extension"), head_); return; }
                     var kind = System.Web.HttpUtility.ParseQueryString(query)["kind"] ?? "page";
                     await Respond(stream, 200, "text/javascript; charset=utf-8", Encoding.UTF8.GetBytes(runtime(kind)), head_);
                     return;
                 }
                 if (path == "__search/background.html")
                 {
+                    // It runs the extension's chrome.* APIs; only the browser's
+                    // own URL, carrying this run's token, opens it.
+                    if (!string.Equals(QueryValue(query, "key"), Token, StringComparison.Ordinal))
+                    { await Respond(stream, 403, "text/plain", Encoding.UTF8.GetBytes("not the extension"), head_); return; }
                     string html = manifest.BackgroundPage != null && File.Exists(Path.Combine(manifest.Folder, manifest.BackgroundPage))
                         ? Bootstrap.InjectRuntime(File.ReadAllText(Path.Combine(manifest.Folder, manifest.BackgroundPage)), "background")
                         : Bootstrap.BackgroundHtml(manifest);
@@ -88,7 +105,7 @@ sealed class ExtensionServer : IDisposable
                 if (!file.StartsWith(root, StringComparison.OrdinalIgnoreCase) || !File.Exists(file)) { await Respond(stream, 404, "text/plain", Encoding.UTF8.GetBytes("not found"), head_); return; }
 
                 // A web page may load only what the extension lists as web accessible.
-                if (!FromSelf(headers) && !Accessible(path)) { await Respond(stream, 403, "text/plain", Encoding.UTF8.GetBytes("not web accessible"), head_); return; }
+                if (!FromSelf(headers) && !Accessible(path, headers)) { await Respond(stream, 403, "text/plain", Encoding.UTF8.GetBytes("not web accessible"), head_); return; }
 
                 var type = Type(file);
                 byte[] body = await File.ReadAllBytesAsync(file);
@@ -103,20 +120,58 @@ sealed class ExtensionServer : IDisposable
         }
     }
 
+    /// True only for this extension's own origin: 127.0.0.1 (or localhost) on
+    /// this exact port. No prefix tricks, no port 80801 matching 8080.
     bool FromSelf(Dictionary<string, string> headers)
     {
         var from = headers.GetValueOrDefault("origin") ?? headers.GetValueOrDefault("referer");
-        if (string.IsNullOrEmpty(from)) return true;   // typed or opened by the browser
-        return from.StartsWith(Base.TrimEnd('/'), StringComparison.OrdinalIgnoreCase);
+        if (!string.IsNullOrEmpty(from))
+        {
+            if (!Uri.TryCreate(from, UriKind.Absolute, out var uri)) return false;
+            return uri.Scheme == Uri.UriSchemeHttp
+                && (uri.Host == "127.0.0.1" || uri.Host.Equals("localhost", StringComparison.OrdinalIgnoreCase))
+                && uri.Port == Port;
+        }
+
+        // No Origin/Referer: a typed address, or the browser opening the page.
+        // Chromium says so with Fetch Metadata; WebKit does not send it, so an
+        // HTML navigation is the fallback. A bare subresource is not the extension.
+        var mode = headers.GetValueOrDefault("sec-fetch-mode");
+        var site = headers.GetValueOrDefault("sec-fetch-site");
+        if (mode != null || site != null)
+            return mode == "navigate" && (site is "none" or "same-origin");
+        return headers.TryGetValue("accept", out var accept)
+            && accept.Contains("text/html", StringComparison.OrdinalIgnoreCase);
     }
 
-    bool Accessible(string path)
+    /// A listed web-accessible resource, for an origin its `matches` allow.
+    bool Accessible(string path, Dictionary<string, string> headers)
     {
-        foreach (var (resources, _) in manifest.WebAccessible)
-            foreach (var r in resources)
-                if (System.Text.RegularExpressions.Regex.IsMatch(path, MatchPattern.GlobToRegex(r.TrimStart('/')), System.Text.RegularExpressions.RegexOptions.IgnoreCase))
-                    return true;
+        var from = headers.GetValueOrDefault("origin") ?? headers.GetValueOrDefault("referer");
+        Uri? origin = Uri.TryCreate(from, UriKind.Absolute, out var uri) ? uri : null;
+        foreach (var (resources, matches) in manifest.WebAccessible)
+        {
+            if (!resources.Any(r => System.Text.RegularExpressions.Regex.IsMatch(
+                    path, MatchPattern.GlobToRegex(r.TrimStart('/')), System.Text.RegularExpressions.RegexOptions.IgnoreCase)))
+                continue;
+            // A legacy list with no matches means every origin.
+            if (matches.Length == 0) return true;
+            if (origin is null) continue;
+            if (matches.Any(m => MatchPattern.Matches(m, origin.AbsoluteUri))) return true;
+        }
         return false;
+    }
+
+    static string? QueryValue(string query, string key)
+    {
+        foreach (var part in query.Split('&', StringSplitOptions.RemoveEmptyEntries))
+        {
+            int eq = part.IndexOf('=');
+            var name = eq < 0 ? part : part[..eq];
+            if (!name.Equals(key, StringComparison.Ordinal)) continue;
+            return eq < 0 ? "" : Uri.UnescapeDataString(part[(eq + 1)..]);
+        }
+        return null;
     }
 
     static async Task<string?> ReadHead(NetworkStream stream)
