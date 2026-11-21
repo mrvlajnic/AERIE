@@ -26,11 +26,13 @@ public static class ContentRules
         var rules = new JsonArray();
         foreach (var d in Core.Shield.Unwanted)
             rules.Add(new JsonObject { ["trigger"] = Trigger(NetworkFilter(d), "third-party"), ["action"] = new JsonObject { ["type"] = "block" } });
-        rules.Add(new JsonObject
-        {
-            ["trigger"] = Trigger(".*"),
-            ["action"] = new JsonObject { ["type"] = "css-display-none", ["selector"] = string.Join(", ", Core.Shield.Slots) },
-        });
+        // One rule per selector: an invalid one must not take the rest with it.
+        foreach (var selector in Core.Shield.Slots)
+            rules.Add(new JsonObject
+            {
+                ["trigger"] = Trigger(".*"),
+                ["action"] = new JsonObject { ["type"] = "css-display-none", ["selector"] = selector },
+            });
         foreach (var (sites, selector) in Core.Shield.SlotsBySite)
         {
             var on = sites.Where(s => !paused.Contains(s)).Select(s => (JsonNode)("*" + s)).ToArray();

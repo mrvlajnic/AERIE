@@ -17,6 +17,14 @@ public class ContentRulesTests
         Assert.Matches(first["url-filter"]!.GetValue<string>(), "https://securepubads.g.doubleclick.net/tag.js");
         Assert.DoesNotMatch(first["url-filter"]!.GetValue<string>(), "https://notdoubleclick.net/x");
     }
+
+    [Fact]
+    public void OneRulePerCosmeticSelector()
+    {
+        var rules = JsonNode.Parse(ContentRules.Shield(Array.Empty<string>()))!.AsArray();
+        int css = rules.Count(r => r!["action"]!["type"]!.GetValue<string>() == "css-display-none");
+        Assert.Equal(Shield.Slots.Length + Shield.SlotsBySite.Length, css);
+    }
 }
 
 public class DnrTests

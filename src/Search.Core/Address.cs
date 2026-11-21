@@ -5,7 +5,7 @@ namespace Search.Core;
 public static class Address
 {
     static readonly HashSet<string> Ours = new(StringComparer.OrdinalIgnoreCase)
-        { "http", "https", "file", "about", "data", "edge", "chrome-extension", "search" };
+        { "http", "https", "file", "about", "data", "edge", "chrome-extension" };
 
     /// A path on this PC, C:\notes\page.html or \\server\share\page.html,
     /// only when it really is a file. Committed navigation only.
@@ -22,26 +22,42 @@ public static class Address
     public static Uri? Url(string typed)
     {
         var text = typed.Trim();
-        if (text.Length == 0 || text.Contains(' ')) return null;
+        if (text.Length == 0) return null;
 
-        // Written with a scheme, it is taken at its word.
+        // Written with a scheme, it is taken at its word. A file URL may
+        // contain spaces ("file:///C:/My Documents/a.html"); other schemes
+        // may not.
         int split = text.IndexOf("://", StringComparison.Ordinal);
         if (split > 0)
         {
             var scheme = text[..split];
             if (!Ours.Contains(scheme)) return null;
+            bool spacesAllowed = scheme.Equals("file", StringComparison.OrdinalIgnoreCase)
+                || scheme.Equals("data", StringComparison.OrdinalIgnoreCase);
+            if (text.Contains(' ') && !spacesAllowed) return null;
             return Uri.TryCreate(text, UriKind.Absolute, out var u) ? u : null;
         }
         var lower = text.ToLowerInvariant();
         if (lower.StartsWith("about:") || lower.StartsWith("data:") || lower.StartsWith("edge:"))
             return Uri.TryCreate(text, UriKind.Absolute, out var u) ? u : null;
 
+        if (text.Contains(' ')) return null;
+
         // Everything else has to look like a host first. "hello world" is
         // not a website, and neither is "todo".
         int end = text.IndexOfAny(new[] { '/', '?', '#' });
         var head = end < 0 ? text : text[..end];
         if (head.Contains('@')) return null;          // an email address
-        if (head.StartsWith("[::1]")) return Make("http://" + text);
+
+        // Any IPv6 literal, not only loopback.
+        if (head.StartsWith('['))
+        {
+            int close = head.IndexOf(']');
+            if (close < 0 || !System.Net.IPAddress.TryParse(head[1..close], out var ip)) return null;
+            bool local6 = System.Net.IPAddress.IsLoopback(ip) || ip.IsIPv6LinkLocal || ip.IsIPv6UniqueLocal;
+            return Make((local6 ? "http://" : "https://") + text);
+        }
+
         var host = head.Split(':')[0];
         if (!LooksLikeHost(host)) return null;
         // A port has to be a number: "note:to-self" is not an address.
@@ -116,7 +132,7 @@ public static class Address
     {
         if (string.IsNullOrEmpty(url.Host)) return url.AbsoluteUri;
         var bare = WithoutWww(url.Host);
-        var path = url.AbsolutePath;
+        var path = Uri.UnescapeDataString(url.AbsolutePath);
         return string.IsNullOrEmpty(path) || path == "/" ? bare : bare + path;
     }
 

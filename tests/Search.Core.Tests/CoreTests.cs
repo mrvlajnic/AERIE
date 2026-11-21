@@ -22,8 +22,20 @@ public class AddressTests
     [InlineData("me@example.com")]
     [InlineData("mailto://x")]
     [InlineData("note:to-self")]
+    [InlineData("search:cats")]
     [InlineData("")]
     public void NotPlaces(string typed) => Assert.Null(Address.Url(typed));
+
+    [Theory]
+    [InlineData("[::1]", "http://[::1]/")]
+    [InlineData("[::1]:3000", "http://[::1]:3000/")]
+    [InlineData("[fe80::1]", "http://[fe80::1]/")]
+    [InlineData("[2001:db8::1]", "https://[2001:db8::1]/")]
+    public void IpV6(string typed, string expected) => Assert.Equal(expected, Address.Url(typed)?.AbsoluteUri);
+
+    [Fact]
+    public void FileUrlMayContainSpaces() =>
+        Assert.Equal("file", Address.Url("file:///C:/My Documents/a.html")?.Scheme);
 
     [Fact]
     public void ZeroIsLocalhost() =>
@@ -45,6 +57,10 @@ public class AddressTests
 
     [Fact]
     public void Pretty() => Assert.Equal("example.com/docs", Address.Pretty(new Uri("https://www.example.com/docs")));
+
+    [Fact]
+    public void PrettyDecodesThePath() =>
+        Assert.Equal("example.com/a b", Address.Pretty(new Uri("https://www.example.com/a%20b")));
 }
 
 public class EngineTests
@@ -62,7 +78,12 @@ public class EngineTests
     }
 
     [Fact]
-    public void BadCustomFallsBack() => Assert.Equal(Engine.Template("google", ""), Engine.Template("custom", "no placeholder"));
+    public void BadCustomFallsBack()
+    {
+        var fallback = Engine.Template("google", "");
+        Assert.Equal(fallback, Engine.Template("custom", "no placeholder"));
+        Assert.Equal("https://www.google.com/search?q=github", Engine.Url("github", fallback)!.AbsoluteUri);
+    }
 }
 
 public class ShieldTests
@@ -81,8 +102,24 @@ public class ShieldTests
         Assert.False(Shield.ShouldBlock(new Uri("https://www.taboola.com/about.js"), new Uri("https://taboola.com/")));
 
     [Fact]
-    public void CosmeticScriptMentionsPaused() => Assert.Contains("\"example.org\"", Shield.CosmeticScript(new[] { "example.org" }));
+    public void CosmeticScriptListsPaused()
+    {
+        var script = Shield.CosmeticScript(new[] { "example.org" });
+        Assert.Contains("\"example.org\"", script);
+        Assert.Contains("off.indexOf(h)>=0", script);
+    }
+
+    [Fact]
+    public void CosmeticScriptKeepsOneRulePerSelector()
+    {
+        var script = Shield.CosmeticScript(Array.Empty<string>());
+        Assert.Contains(".adsbygoogle{display:none !important}", script);
+        Assert.Contains("ins.adsbygoogle{display:none !important}", script);
+        Assert.DoesNotContain(".adsbygoogle, ins.adsbygoogle", script);
+    }
 }
+
+
 
 public class CleanLinkTests
 {

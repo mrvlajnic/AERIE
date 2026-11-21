@@ -73,12 +73,15 @@ public static class Shield
         var bySite = string.Join(",", SlotsBySite.Select(s =>
             $"[{Json(string.Join(",", s.Sites))},{Json(s.Selector)}]"));
         var off = string.Join(",", paused.Select(Json));
+        // One rule per selector: a selector Chromium no longer understands
+        // drops only itself, not the whole cosmetic list.
+        var slotCss = string.Join("\n", Slots.Select(s => s + "{display:none !important}"));
         return
             "(function(){try{" + Put + "var h=location.hostname.replace(/^www\\./,'');" +
             $"var off=[{off}];if(off.indexOf(h)>=0||off.indexOf(location.hostname)>=0)return;" +
-            $"var css={Json(string.Join(",", Slots))}+'{{display:none !important}}';" +
+            $"var css={Json(slotCss)};" +
             $"var by=[{bySite}];" +
-            "by.forEach(function(e){if(e[0].split(',').some(function(d){return h===d||h.endsWith('.'+d)}))css+=e[1]+'{display:none !important}'});" +
+            "by.forEach(function(e){if(e[0].split(',').some(function(d){return h===d||h.endsWith('.'+d)}))css+='\\n'+e[1]+'{display:none !important}'});" +
             "var s=document.createElement('style');s.id='office-shield';s.textContent=css;put(s);" +
             "}catch(e){}})();";
     }
