@@ -21,8 +21,8 @@ UninstallDisplayIcon={app}\Search-win-x64.exe
 Compression=lzma2
 SolidCompression=yes
 WizardStyle=modern
-ArchitecturesAllowed=x64
-ArchitecturesInstallIn64BitMode=x64
+ArchitecturesAllowed=x64compatible
+ArchitecturesInstallIn64BitMode=x64compatible
 ; Per-user by default: no administrator prompt to try the app.
 PrivilegesRequired=lowest
 PrivilegesRequiredOverridesAllowed=dialog
