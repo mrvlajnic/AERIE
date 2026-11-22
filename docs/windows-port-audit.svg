@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1240" height="1544" viewBox="0 0 1240 1544" font-family="Segoe UI, Helvetica, Arial, sans-serif">
 <rect width="1240" height="1544" fill="#ffffff"/>
-<text x="18" y="38" font-size="27" font-weight="bold" fill="#111">Search for Windows — Audit</text>
-<text x="18" y="58" font-size="12" fill="#555">aidma123/Search-Windows-Port · branch <tspan font-family="Consolas, 'Cascadia Mono', monospace" font-size="11">claude/eloquent-cray-lq0lav</tspan> · commit 149f7d3 · 63 findings from reading every source file and driving the built app</text>
+<text x="18" y="38" font-size="27" font-weight="bold" fill="#111">AERIE — code audit</text>
+<text x="18" y="58" font-size="12" fill="#555">inherited Search for Windows port · branch <tspan font-family="Consolas, 'Cascadia Mono', monospace" font-size="11">claude/eloquent-cray-lq0lav</tspan> · commit 149f7d3 · 63 findings from reading every source file and driving the built app</text>
 <rect x="18" y="72" width="203" height="22" rx="4" fill="#2e7d32"/>
 <text x="119" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">build: 0 warnings / 0 errors</text>
 <rect x="227.8" y="72" width="110" height="22" rx="4" fill="#2e7d32"/>
@@ -180,7 +180,7 @@
 <text x="1222" y="1278.0427033095116" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">25% fixed (1/4) · 1 minor · 2 info</text>
 <rect x="18" y="1288.0427033095116" width="1204" height="64" fill="#efefef"/>
 <rect x="18.5" y="1288.5" width="333.4" height="63.0" fill="#d9b40a" stroke="#ffffff" stroke-width="1"/>
-<text x="185.2" y="1324.1" font-size="12.0" fill="#241f00" text-anchor="middle">Still named Search</text>
+<text x="185.2" y="1324.1" font-size="12.0" fill="#241f00" text-anchor="middle">AERIE name; icon pending</text>
 <rect x="352.9" y="1288.5" width="333.4" height="63.0" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
 <text x="519.7" y="1324.1" font-size="12.0" fill="#ffffff" text-anchor="middle">README claims checked (fixed)</text>
 <rect x="687.4" y="1288.5" width="266.6" height="63.0" fill="#5b7c99" stroke="#ffffff" stroke-width="1"/>
@@ -203,7 +203,7 @@
 <rect x="771.0" y="1408.5" width="149.5" height="89.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
 <text x="845.8" y="1456.2" font-size="9.2" fill="#ffffff" text-anchor="middle">6. Isolated extension world</text>
 <rect x="921.5" y="1408.5" width="149.5" height="89.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
-<text x="996.2" y="1456.4" font-size="10.0" fill="#ffffff" text-anchor="middle">7. Rename Search to AERIE</text>
+<text x="996.2" y="1457.1" font-size="12.0" fill="#ffffff" text-anchor="middle">7. Cut the AERIE icon</text>
 <rect x="1072.0" y="1408.5" width="149.5" height="89.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
 <text x="1146.8" y="1457.1" font-size="12.0" fill="#ffffff" text-anchor="middle">8. Installer signing</text>
 <text x="620.0" y="1528" font-size="11" fill="#777" text-anchor="middle">audited by reading every source file, building, running 108 tests, and driving the app · 2026-11-22</text>

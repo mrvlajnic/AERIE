@@ -21,5 +21,5 @@ license, as distributed in that archive.
 
 ## Search for Mac
 
-Search for Windows is a port of Search by Office Commun (MIT); the reading
+AERIE for Windows is a port of Search by Office Commun (MIT); the reading
 mode extraction script is theirs, unchanged.

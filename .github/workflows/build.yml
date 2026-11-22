@@ -24,27 +24,27 @@ jobs:
           dotnet-version: 8.0.x
 
       - name: Test
-        run: dotnet test tests/Search.Core.Tests -c Release
+        run: dotnet test tests/AERIE.Core.Tests -c Release
 
       - name: Publish
         shell: pwsh
         run: |
           foreach ($rid in "win-x64", "win-arm64") {
             # Small: needs the .NET 8 Desktop Runtime (Windows offers to install it on first launch).
-            dotnet publish src/Search -c Release -r $rid --self-contained false `
+            dotnet publish src/AERIE -c Release -r $rid --self-contained false `
               -p:PublishSingleFile=true -o "out/$rid"
             # Standalone: brings its own .NET, nothing else to install.
-            dotnet publish src/Search -c Release -r $rid --self-contained true `
+            dotnet publish src/AERIE -c Release -r $rid --self-contained true `
               -p:PublishSingleFile=true -p:EnableCompressionInSingleFile=true -o "out/$rid-standalone"
-            Rename-Item "out/$rid/Search.exe" "Search-$rid.exe"
-            Rename-Item "out/$rid-standalone/Search.exe" "Search-$rid-standalone.exe"
+            Rename-Item "out/$rid/AERIE.exe" "AERIE-$rid.exe"
+            Rename-Item "out/$rid-standalone/AERIE.exe" "AERIE-$rid-standalone.exe"
           }
 
       - name: Smoke test
         shell: pwsh
         run: |
           $data = Join-Path $env:RUNNER_TEMP "smoke"
-          ./tools/smoke.ps1 -Exe "out/win-x64/Search-win-x64.exe" -Data $data
+          ./tools/smoke.ps1 -Exe "out/win-x64/AERIE-win-x64.exe" -Data $data
 
       - name: Installer
         shell: pwsh
@@ -54,7 +54,7 @@ jobs:
             Select-Object -First 1
           if (-not $iscc) { throw "ISCC.exe not found after installing Inno Setup" }
           $version = (Get-Content VERSION -Raw).Trim()
-          & $iscc.FullName "/DAppVersion=$version" "installer\search.iss"
+          & $iscc.FullName "/DAppVersion=$version" "installer\aerie.iss"
 
       - name: Package the WebKit build
         shell: pwsh
@@ -63,13 +63,13 @@ jobs:
           Invoke-WebRequest "https://cdn.playwright.dev/dbazure/download/playwright/builds/webkit/$env:WEBKIT_REVISION/webkit-win64.zip" -OutFile $zip
           $hash = (Get-FileHash $zip -Algorithm SHA256).Hash.ToLowerInvariant()
           if ($hash -ne $env:WEBKIT_SHA256) { throw "WebKit archive hash $hash does not match the pinned $env:WEBKIT_SHA256" }
-          $dir = "out/Search-WebKit-win-x64"
-          dotnet publish src/Search -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o $dir
+          $dir = "out/AERIE-WebKit-win-x64"
+          dotnet publish src/AERIE -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o $dir
           Expand-Archive $zip -DestinationPath $dir -Force
-          # The zip must land flat: Search.exe falls back to WebView2 silently
+          # The zip must land flat: AERIE.exe falls back to WebView2 silently
           # when WebKit2.dll is not beside it.
           if (-not (Test-Path "$dir/WebKit2.dll")) { throw "WebKit2.dll is missing from the downloaded archive" }
-          # Playwright's own test shell isn't part of Search.
+          # Playwright's own test shell isn't part of AERIE.
           Remove-Item "$dir/Playwright.exe", "$dir/protocol.json" -ErrorAction SilentlyContinue
           # The LGPL-2.1 and BSD-2-Clause texts ship with the browser, plus
           # anything the archive itself carried, named to show its origin.
@@ -80,24 +80,24 @@ jobs:
             Where-Object { $_.FullName -notlike "$lic*" } |
             ForEach-Object { Copy-Item $_.FullName (Join-Path $lic ("webkit-" + $_.Name)) -Force }
           Copy-Item LICENSE, THIRD-PARTY-NOTICES.md $dir
-          Compress-Archive "$dir/*" "out/Search-WebKit-win-x64.zip"
+          Compress-Archive "$dir/*" "out/AERIE-WebKit-win-x64.zip"
           Get-ChildItem out -Recurse -Include *.exe, *.zip -Depth 1 | Format-Table Name, Length
 
       - uses: actions/upload-artifact@v4
         with:
-          name: Search-windows
+          name: AERIE-windows
           path: |
             out/win-*/*.exe
-            out/Search-setup.exe
-            out/Search-WebKit-win-x64.zip
+            out/AERIE-setup.exe
+            out/AERIE-WebKit-win-x64.zip
 
       - uses: actions/upload-artifact@v4
         with:
           name: bench-builds
           retention-days: 3
           path: |
-            out/win-x64/Search-win-x64.exe
-            out/Search-WebKit-win-x64/**
+            out/win-x64/AERIE-win-x64.exe
+            out/AERIE-WebKit-win-x64/**
 
   # The same sites in each engine, on the same machine: what the whole
   # browser (every process it starts) holds in memory.
@@ -119,8 +119,8 @@ jobs:
       - name: Run the benchmark
         shell: pwsh
         run: |
-          $webview2 = (Get-ChildItem builds -Recurse -Filter Search-win-x64.exe | Select-Object -First 1).FullName
-          $webkit = (Get-ChildItem builds -Recurse -Filter Search.exe | Where-Object { Test-Path (Join-Path $_.DirectoryName WebKit2.dll) } | Select-Object -First 1).FullName
+          $webview2 = (Get-ChildItem builds -Recurse -Filter AERIE-win-x64.exe | Select-Object -First 1).FullName
+          $webkit = (Get-ChildItem builds -Recurse -Filter AERIE.exe | Where-Object { Test-Path (Join-Path $_.DirectoryName WebKit2.dll) } | Select-Object -First 1).FullName
           $setups = @(
             @{ name = "webview2"; exe = $webview2; engine = "webview2"; settings = '{}' },
             @{ name = "webkit"; exe = $webkit; engine = "webkit"; settings = '{}' },
@@ -131,7 +131,7 @@ jobs:
           # A crash leaves a dump; the debugger names where it happened.
           $dumps = Join-Path $env:RUNNER_TEMP "dumps"
           New-Item -ItemType Directory $dumps | Out-Null
-          foreach ($exe in "Search.exe", "Search-win-x64.exe") {
+          foreach ($exe in "AERIE.exe", "AERIE-win-x64.exe") {
             $k = "HKLM:\SOFTWARE\Microsoft\Windows\Windows Error Reporting\LocalDumps\$exe"
             New-Item -Path $k -Force | Out-Null
             Set-ItemProperty $k DumpFolder $dumps; Set-ItemProperty $k DumpType 1; Set-ItemProperty $k DumpCount 5
@@ -148,7 +148,7 @@ jobs:
             if (-not $exited) { Write-Host "timed out"; Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue }
             $code = if ($exited) { $p.ExitCode } else { -1 }
             Write-Host "exit code: $code"
-            Get-Process | Where-Object { $_.ProcessName -match 'WebKit|msedgewebview2|Search' } | Stop-Process -Force -ErrorAction SilentlyContinue
+            Get-Process | Where-Object { $_.ProcessName -match 'WebKit|msedgewebview2|AERIE' } | Stop-Process -Force -ErrorAction SilentlyContinue
             if (Test-Path (Join-Path $data "errors.log")) { Copy-Item (Join-Path $data "errors.log") "bench/errors-$($s.name).log"; Get-Content (Join-Path $data "errors.log") | Select-Object -First 60 }
             if (Test-Path (Join-Path $data "trace.log")) { Copy-Item (Join-Path $data "trace.log") "bench/trace-$($s.name).log"; Write-Host "-- last steps:"; Get-Content (Join-Path $data "trace.log") | Select-Object -Last 25 }
             if (Test-Path $out) { $j = Get-Content $out -Raw | ConvertFrom-Json; foreach ($x in $j.samples) { Write-Host ("{0}: {1:N0} MB private, {2:N0} MB working set" -f $x.label, $x.privateMB, $x.workingSetMB); $x.byProcess.PSObject.Properties | ForEach-Object { Write-Host ("    {0}: {1}" -f $_.Name, $_.Value) } } }
@@ -185,7 +185,7 @@ jobs:
     steps:
       - uses: actions/download-artifact@v4
         with:
-          name: Search-windows
+          name: AERIE-windows
           path: artifacts
       - uses: softprops/action-gh-release@v2
         with:

@@ -9,7 +9,7 @@ out of the way, one field, no account, no telemetry — reimplemented for Window
 in C#/.NET.
 
 This repository currently holds the inherited **Search for Windows** prototype.
-The AERIE name is new; the application still builds as `Search.exe`, with the
+The AERIE name is new; the application still builds as `AERIE.exe`, with the
 original namespaces and file layout, while the identity and architecture are
 being established.
 
@@ -121,21 +121,17 @@ Fixed in this batch, each verified against the running build:
   Button with an Invoke pattern (checked through the accessibility tree).
 - **CRX3** — the signature and extension id are verified over the signed
   header and archive before anything is unpacked; tampered, wrong-id, CRX2 and
-  zip-traversal packages are rejected (96 tests).
+  zip-traversal packages are rejected (108 tests).
 - **WebKit extensions** — the page-world runtime is disabled: any page could
   act as an installed extension. The menu and settings explain it; WebView2
   remains the supported extension path.
 - **Core parser** — `search:` is no longer treated as a URL, any IPv6 literal
   parses, file URLs may contain spaces, and titles decode their paths; a parser
-  regression corpus brings the suite to 96 tests.
+  regression corpus brings the suite to 108 tests.
 - **Cosmetic blocking** — the ad-slot CSS is emitted one rule per selector, so
   one selector the engine stops understanding cannot disable the rest.
 - **CI** — the benchmark job now fails when the WebView2 run crashes or writes
   no report, and the WebKit archive is checked for `WebKit2.dll`.
-
-The remaining blockers need a decision (CRX3 verification, and whether to keep,
-fix or disable the WebKit extension host), so they are deliberately left for
-the next discussion.
 
 ## Building
 
@@ -143,19 +139,20 @@ Requirements: Windows 10/11, the .NET 8 SDK or newer, and the WebView2
 Evergreen Runtime (present on Windows 10 and 11 by default).
 
 ```
-dotnet build Search.sln
-dotnet test Search.sln
-dotnet publish src/Search -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o out
+dotnet build AERIE.sln
+dotnet test AERIE.sln
+dotnet publish src/AERIE -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o out
 ```
 
-Run `out\Search.exe`. The framework-dependent build needs the .NET 8 Desktop
+Run `out\AERIE.exe`. The framework-dependent build needs the .NET 8 Desktop
 Runtime; a self-contained build is available with `--self-contained true`.
 
-## A note on the names
+## A note on the name and icon
 
-The binary, namespaces, settings folder (`%LOCALAPPDATA%\Search`) and file names
-still say "Search". That is deliberate for now: the audit, tests and behaviour
-are unchanged by branding, and the rename comes with the product identity.
+The binary (`AERIE.exe`), namespaces, settings folder (`%LOCALAPPDATA%\AERIE`)
+and installer are AERIE's. On first start, an existing `Search` profile is moved
+across. The application icon is still the original Search icon until the AERIE
+brand asset is cut from the logo sheet.
 
 ## Attribution
 
