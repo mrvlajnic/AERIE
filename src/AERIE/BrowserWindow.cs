@@ -690,6 +690,7 @@ sealed partial class BrowserWindow : Window
             ("Duplicate", () => Open(t.Url, index: t.Pinned ? 0 : Space.Tabs.IndexOf(t) + 1)),
             ("Copy Address", () => Clipboard.SetText(t.Url)),
             ("Copy Clean Link", () => Clipboard.SetText(CleanLink.Clean(t.Url))),
+            ("Print", t.Page is { } pg ? () => pg.Print() : null),
             (t.Muted ? "Unmute" : "Mute", t.Awake ? () => Mute(t) : null),
         };
         if (t.Pinned) items.Add(("Back to Pinned Page", () => Navigate(t, t.Home!)));

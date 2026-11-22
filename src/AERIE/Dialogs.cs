@@ -209,8 +209,15 @@ sealed class SettingsWindow : Plain
                 Add(row);
             }
         }
-        Add(SiteCard.Toggle("Offer to save passwords", S.SavePasswords, true, on => { S.SavePasswords = on; browser.ApplySettings(); }));
-        Note("Passwords are kept by the engine, encrypted with your Windows account, on this PC only.");
+        if (browser.Engine.Name == "WebView2")
+        {
+            Add(SiteCard.Toggle("Offer to save passwords", S.SavePasswords, true, on => { S.SavePasswords = on; browser.ApplySettings(); }));
+            Note("Passwords are kept by the engine, encrypted with your Windows account, on this PC only.");
+        }
+        else
+        {
+            Note("This WebKit engine does not save passwords; switch to WebView2 in settings to use password saving.");
+        }
         var hiddenCount = browser.Hidden.Sites.Sum(s => s.Value.Count);
         Buttons(
             ("Clear Browsing Data…", async () =>

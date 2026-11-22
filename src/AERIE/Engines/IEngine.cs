@@ -43,6 +43,8 @@ interface IPage : IDisposable
     Task Freeze();
     void OpenDevTools();
     void Focus();
+    /// Shows the engine's print dialog for this page.
+    void Print() { }
     /// Finds text in the page; the engine's own highlighter where it has one.
     void Find(string text, bool backwards) { }
 }

@@ -486,6 +486,9 @@ sealed class WebKitPage : IPage
 
     public void OpenDevTools() { if (PageRef != IntPtr.Zero) WK.WKInspectorShow(WK.WKPageGetInspector(PageRef)); }
 
+    /// WebKit's own print path is the page's window.print().
+    public void Print() { if (PageRef != IntPtr.Zero) _ = Eval("window.print()"); }
+
     public void Focus()
     {
         if (view != IntPtr.Zero && shown) WK.SetFocus(WK.WKViewGetWindow(view));

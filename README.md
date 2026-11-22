@@ -15,8 +15,8 @@ being established.
 
 ![AERIE code audit treemap](docs/windows-port-audit.svg)
 
-*Audit of the current prototype — 63 findings: **55 fixed (87%)**, no blockers,
-no majors, 4 minor. Section percentages show how much of each area is fixed.
+*Audit of the current prototype — 63 findings: **58 fixed (92%)**, no blockers,
+no majors, 1 minor. Section percentages show how much of each area is fixed.
 Tiles are coloured by severity and sized by impact; the full map is
 [docs/windows-port-audit.svg](docs/windows-port-audit.svg).*
 
@@ -31,18 +31,19 @@ Tiles are coloured by severity and sized by impact; the full map is
 
 ## Known issues
 
-The audit found 63 issues; **55 are fixed (87%), with no blockers and no majors
-left.**
+The audit found 63 issues; **58 are fixed (92%), with no blockers and no majors
+left.** One minor remains: release signing waits for a certificate.
 
 The largest remaining items:
 
-- **Process sets** — each fresh space runs its own WebView2 profile and process set.
-- **WebKit** — print, picture-in-picture and passwords remain stubs.
+- **Signing** — CI signs every executable and the installer when
+  `WINDOWS_CERT_BASE64` and `WINDOWS_CERT_PASSWORD` are set as repository
+  secrets; without them the release is unsigned.
 - **Interaction tests** — CI has a UIA startup smoke; typing and key handling
   are still checked by hand.
-- **Distribution** — a per-user installer is built, but there is no code
-  signing or auto-update yet.
-- **Name** — the binary, namespaces and settings folder still say "Search".
+- **Distribution** — a per-user installer is built; there is no auto-update yet.
+- **WebKit passwords** — WebKit is an optional engine and does not save
+  passwords; password saving is a WebView2 feature.
 
 Fixed in this batch, each verified against the running build:
 
@@ -98,7 +99,8 @@ Fixed in this batch, each verified against the running build:
 - **WebKit extensions** — `permissions` answers from the manifest instead of
   "yes" to everything, and alarms persist to `alarms.json` and re-arm after a
   restart.
-- **Installer** — Inno Setup builds a per-user installer in CI (unsigned).
+- **Installer** — Inno Setup builds a per-user installer in CI. It is signed
+  when the certificate secrets are configured; otherwise it is unsigned.
 - **Find** — Ctrl+F asks for text and uses the engine's own highlighter
   (`WKPageFindString` on WebKit, `window.find` on WebView2).
 - **Tests** — the tautological history cap test now asserts LRU eviction, and

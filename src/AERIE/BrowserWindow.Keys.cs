@@ -5,8 +5,9 @@ namespace AERIE;
 /// The keyboard: Search's Mac shortcuts with ⌘ as Ctrl and ⌥ as Alt, plus
 /// the Windows habits (F5, F6, Alt+D, Ctrl+Tab, Ctrl+H). Keys pressed inside
 /// a page reach here too: WebView2 hands its accelerator keys to the window.
-/// Find (Ctrl+F), Print (Ctrl+P), Zoom (Ctrl +/-/0) and the developer
-/// tools (F12, Ctrl+Shift+I, Ctrl+Shift+J) are the engine's own.
+/// Find (Ctrl+F), Zoom (Ctrl +/-/0) and the developer tools (F12,
+/// Ctrl+Shift+I, Ctrl+Shift+J) are the engine's own; Print is ours so both
+/// engines take the same path.
 sealed partial class BrowserWindow
 {
     void OnKey(object sender, KeyEventArgs e)
@@ -36,6 +37,7 @@ sealed partial class BrowserWindow
                 case Key.R: Reload(); return true;
                 case Key.D: if (Current != null) TogglePin(Current); return true;
                 case Key.H: case Key.Y: ShowHistory(); return true;
+                case Key.P: Current?.Page?.Print(); return true;
                 case Key.F: FindOnPage(); return true;
                 case Key.OemComma: ShowSettings(); return true;
                 case Key.Tab: case Key.PageDown: Step(1); return true;

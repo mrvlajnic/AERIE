@@ -12,7 +12,7 @@
     <RootNamespace>AERIE</RootNamespace>
     <AssemblyName>AERIE</AssemblyName>
     <ApplicationManifest>app.manifest</ApplicationManifest>
-    <ApplicationIcon>search.ico</ApplicationIcon>
+    <ApplicationIcon>aerie.ico</ApplicationIcon>
     <Version>$([System.IO.File]::ReadAllText('$(MSBuildThisFileDirectory)../../VERSION').Trim())</Version>
     <Product>AERIE</Product>
     <Company>AERIE for Windows contributors</Company>

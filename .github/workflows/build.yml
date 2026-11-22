@@ -16,6 +16,10 @@ env:
 jobs:
   build:
     runs-on: windows-latest
+    env:
+      # Optional: set both secrets to sign the release. Unset means unsigned.
+      SIGN_CERT_BASE64: ${{ secrets.WINDOWS_CERT_BASE64 }}
+      SIGN_CERT_PASSWORD: ${{ secrets.WINDOWS_CERT_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
 
@@ -46,6 +50,12 @@ jobs:
           $data = Join-Path $env:RUNNER_TEMP "smoke"
           ./tools/smoke.ps1 -Exe "out/win-x64/AERIE-win-x64.exe" -Data $data
 
+      - name: Sign executables (optional)
+        shell: pwsh
+        run: |
+          $exes = Get-ChildItem out -Recurse -Filter *.exe | ForEach-Object FullName
+          ./tools/sign.ps1 -Path $exes
+
       - name: Installer
         shell: pwsh
         run: |
@@ -55,6 +65,10 @@ jobs:
           if (-not $iscc) { throw "ISCC.exe not found after installing Inno Setup" }
           $version = (Get-Content VERSION -Raw).Trim()
           & $iscc.FullName "/DAppVersion=$version" "installer\aerie.iss"
+
+      - name: Sign installer (optional)
+        shell: pwsh
+        run: ./tools/sign.ps1 -Path out/AERIE-setup.exe
 
       - name: Package the WebKit build
         shell: pwsh

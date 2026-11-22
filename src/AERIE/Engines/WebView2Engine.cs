@@ -102,7 +102,8 @@ sealed class WebView2Engine : IEngine
         catch
         {
             // Older runtimes may not allow deleting a profile still in memory.
-            try { Directory.Delete(Path.Combine(Store.Folder, "Web", "EBWebView", profile), true); } catch { }
+            // WebView2 names the folder WV2Profile_<name>, not <name>.
+            try { Directory.Delete(Path.Combine(Store.Folder, "Web", "EBWebView", "WV2Profile_" + profile), true); } catch { }
         }
     }
 }
@@ -316,6 +317,9 @@ sealed class WebView2Page : IPage
     }
 
     public void RefreshScripts() => _ = AddScripts();
+
+    /// The native print preview: the same dialog Edge uses.
+    public void Print() => Core?.ShowPrintUI(CoreWebView2PrintDialogKind.Browser);
 
     async void OnNewWindow(object? sender, CoreWebView2NewWindowRequestedEventArgs e)
     {
