@@ -374,12 +374,35 @@ public class HistoryTests
     }
 
     [Fact]
-    public void Caps()
+    public void CapsKeepsTheMostRecentlySeen()
     {
         var h = new History();
-        for (int i = 0; i < History.Cap + 5; i++) h.Visits.Add(new Visit { Url = "https://e.com/" + i });
-        h.Record("https://e.com/new", "", Now);
+        for (int i = 0; i < History.Cap; i++)
+            h.Visits.Add(new Visit { Url = "https://e.com/" + i, Last = Now.AddMinutes(i), Count = 1 });
+        h.Record("https://e.com/0", "", Now.AddMinutes(History.Cap + 1));   // moves to the end
+        h.Record("https://e.com/new", "", Now.AddMinutes(History.Cap + 2)); // pushes the oldest away
         Assert.Equal(History.Cap, h.Visits.Count);
+        Assert.Contains(h.Visits, v => v.Url == "https://e.com/0");
+        Assert.DoesNotContain(h.Visits, v => v.Url == "https://e.com/1");
+        Assert.Contains(h.Visits, v => v.Url == "https://e.com/new");
+    }
+
+    [Fact]
+    public void NormalizeMergesLegacyDuplicates()
+    {
+        var h = new History
+        {
+            Visits =
+            {
+                new Visit { Url = "https://x.com/#a", Count = 1, Last = Now },
+                new Visit { Url = "https://x.com/#b", Count = 2, Last = Now.AddDays(1), Title = "Later" },
+            },
+        };
+        h.Normalize();
+        Assert.Single(h.Visits);
+        Assert.Equal("https://x.com/", h.Visits[0].Url);
+        Assert.Equal(3, h.Visits[0].Count);
+        Assert.Equal("Later", h.Visits[0].Title);
     }
 }
 

@@ -36,6 +36,7 @@ sealed partial class BrowserWindow
                 case Key.R: Reload(); return true;
                 case Key.D: if (Current != null) TogglePin(Current); return true;
                 case Key.H: case Key.Y: ShowHistory(); return true;
+                case Key.F: FindOnPage(); return true;
                 case Key.OemComma: ShowSettings(); return true;
                 case Key.Tab: case Key.PageDown: Step(1); return true;
                 case Key.PageUp: Step(-1); return true;
@@ -121,6 +122,16 @@ sealed partial class BrowserWindow
     // Panels -------------------------------------------------------------------
 
     public void OpenOmnibox(bool newTab, bool priv = false, string? seed = null) => new Omnibox(this, newTab, priv, seed).Present();
+
+    string? find;
+    void FindOnPage()
+    {
+        if (Current?.Page is not { } page) return;
+        var text = Prompt.Ask(this, "Find on page", find ?? "");
+        if (string.IsNullOrWhiteSpace(text)) return;
+        find = text;
+        page.Find(text, false);
+    }
     void ShowSwitcher() => new Switcher(this).Present();
     void ShowHistory() => new HistoryPanel(this).Present();
     void ShowHidden() { if (Current?.Host.Length > 0) new HiddenPanel(this, Current.Host).Present(); }

@@ -43,6 +43,8 @@ interface IPage : IDisposable
     Task Freeze();
     void OpenDevTools();
     void Focus();
+    /// Finds text in the page; the engine's own highlighter where it has one.
+    void Find(string text, bool backwards) { }
 }
 
 /// Who a page belongs to: its tab's space (for sign-ins) and whether it's private.

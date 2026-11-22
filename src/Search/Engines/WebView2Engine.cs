@@ -123,7 +123,7 @@ sealed class WebView2Page : IPage
             var k = (e.key || '').toLowerCase();
             var take = false;
             if (e.ctrlKey && !e.altKey && !e.shiftKey)
-              take = has('t n l w k s r d h y , [ ] 1 2 3 4 5 6 7 8 9 tab pagedown pageup', k);
+              take = has('t n l w k s r d h y f , [ ] 1 2 3 4 5 6 7 8 9 tab pagedown pageup', k);
             else if (e.ctrlKey && e.shiftKey && !e.altKey)
               take = has('t n r p h u s tab [ ]', k);
             else if (e.ctrlKey && e.altKey && !e.shiftKey)
@@ -469,6 +469,13 @@ sealed class WebView2Page : IPage
 
     public void OpenDevTools() => Core?.OpenDevToolsWindow();
     public void Focus() => view.Focus();
+
+    public void Find(string text, bool backwards)
+    {
+        if (string.IsNullOrEmpty(text)) return;
+        var quoted = System.Text.Json.JsonSerializer.Serialize(text);
+        _ = Eval($"window.find({quoted}, false, {(backwards ? "true" : "false")}, true)");
+    }
 
     public void Dispose()
     {

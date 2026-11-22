@@ -15,8 +15,8 @@ being established.
 
 ![AERIE code audit treemap](docs/windows-port-audit.svg)
 
-*Audit of the current prototype — 63 findings: **54 fixed (86%)**, no blockers,
-no majors, 5 minor. Section percentages show how much of each area is fixed.
+*Audit of the current prototype — 63 findings: **55 fixed (87%)**, no blockers,
+no majors, 4 minor. Section percentages show how much of each area is fixed.
 Tiles are coloured by severity and sized by impact; the full map is
 [docs/windows-port-audit.svg](docs/windows-port-audit.svg).*
 
@@ -31,13 +31,13 @@ Tiles are coloured by severity and sized by impact; the full map is
 
 ## Known issues
 
-The audit found 63 issues; **54 are fixed (86%), with no blockers and no majors
+The audit found 63 issues; **55 are fixed (87%), with no blockers and no majors
 left.**
 
 The largest remaining items:
 
 - **Process sets** — each fresh space runs its own WebView2 profile and process set.
-- **WebKit** — find, print, picture-in-picture and passwords remain stubs.
+- **WebKit** — print, picture-in-picture and passwords remain stubs.
 - **Interaction tests** — CI has a UIA startup smoke; typing and key handling
   are still checked by hand.
 - **Distribution** — a per-user installer is built, but there is no code
@@ -97,6 +97,10 @@ Fixed in this batch, each verified against the running build:
   "yes" to everything, and alarms persist to `alarms.json` and re-arm after a
   restart.
 - **Installer** — Inno Setup builds a per-user installer in CI (unsigned).
+- **Find** — Ctrl+F asks for text and uses the engine's own highlighter
+  (`WKPageFindString` on WebKit, `window.find` on WebView2).
+- **Tests** — the tautological history cap test now asserts LRU eviction, and
+  the `^` DNR case no longer codifies over-blocking.
 - **Storage** — a damaged JSON file is moved aside as
   `*.unreadable-<time>-<id>` (and logged) instead of being overwritten; reads
   accept any property casing, and every write uses a unique temp file.

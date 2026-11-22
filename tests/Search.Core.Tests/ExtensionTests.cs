@@ -32,7 +32,7 @@ public class DnrTests
     [Theory]
     [InlineData("||ads.example.com^", "https://ads.example.com/x.js", true)]
     [InlineData("||ads.example.com^", "https://sub.ads.example.com/x.js", true)]
-    [InlineData("||ads.example.com^", "https://ads.example.community/x.js", true)] // trailing ^ left open: WebKit has no "or end"
+    [InlineData("||ads.example.com^", "https://ads.example.community/x.js", false)]
     [InlineData("||example.com^track", "https://example.com/track", true)]
     [InlineData("||example.com^track", "https://example.comtrack", false)]
     [InlineData("|https://a.com/x|", "https://a.com/x", true)]

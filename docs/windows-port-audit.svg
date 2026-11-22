@@ -5,7 +5,7 @@
 <rect x="18" y="72" width="203" height="22" rx="4" fill="#2e7d32"/>
 <text x="119" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">build: 0 warnings / 0 errors</text>
 <rect x="227.8" y="72" width="110" height="22" rx="4" fill="#2e7d32"/>
-<text x="283" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">tests: 107/107</text>
+<text x="283" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">tests: 108/108</text>
 <rect x="345.20000000000005" y="72" width="84" height="22" rx="4" fill="#2e7d32"/>
 <text x="387" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">launch: OK</text>
 <rect x="436.20000000000005" y="72" width="91" height="22" rx="4" fill="#2e7d32"/>
@@ -13,9 +13,9 @@
 <rect x="533.8000000000001" y="72" width="71" height="22" rx="4" fill="#2e7d32"/>
 <text x="569" y="87" font-size="12" font-weight="bold" fill="#ffffff" text-anchor="middle">major: 0</text>
 <rect x="611.6000000000001" y="72" width="71" height="22" rx="4" fill="#d9b40a"/>
-<text x="647" y="87" font-size="12" font-weight="bold" fill="#241f00" text-anchor="middle">minor: 5</text>
+<text x="647" y="87" font-size="12" font-weight="bold" fill="#241f00" text-anchor="middle">minor: 4</text>
 <rect x="689.4000000000001" y="72" width="137" height="22" rx="4" fill="#1b5e20"/>
-<text x="758" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">fixed: 54/63 (86%)</text>
+<text x="758" y="87" font-size="12" font-weight="bold" fill="#fff" text-anchor="middle">fixed: 55/63 (87%)</text>
 <text x="18" y="110" font-size="11.5" fill="#333"><tspan font-weight="bold" fill="#777">EVIDENCE  </tspan>30 CultureNotFoundExceptions in errors.log → InvariantGlobalization removed → typed example.com, page loaded, session + history written, no errors.</text>
 <rect x="18" y="126" width="13" height="13" rx="3" fill="#c62828" stroke="#666" stroke-width="0.4"/>
 <text x="36" y="136" font-size="11" fill="#444">blocker</text>
@@ -61,7 +61,7 @@
 <text x="1153.2" y="289.9" font-size="12.0" fill="#ffffff" text-anchor="middle">H-wheel (fixed)</text>
 <text x="18" y="364.8222976870845" font-size="15.5" font-weight="bold" fill="#111">Core logic (Search.Core)</text>
 <text x="241" y="363.8222976870845" font-size="11.5" fill="#777">address, history, shielding, storage</text>
-<text x="1222" y="363.8222976870845" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">83% fixed (10/12) · 1 minor · 1 info</text>
+<text x="1222" y="363.8222976870845" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">92% fixed (11/12) · 1 info</text>
 <rect x="18" y="373.8222976870845" width="1204" height="135" fill="#efefef"/>
 <rect x="18.5" y="374.3" width="189.5" height="134.0" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
 <text x="113.3" y="445.4" font-size="12.0" fill="#ffffff" text-anchor="middle">CRX3 verified (fixed)</text>
@@ -83,8 +83,8 @@
 <text x="970.5" y="443.3" font-size="5.8" fill="#ffffff" text-anchor="middle">Per-selector CSS ru…</text>
 <rect x="1009.1" y="374.3" width="75.2" height="134.0" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
 <text x="1046.7" y="443.3" font-size="5.8" fill="#ffffff" text-anchor="middle">Parser regression c…</text>
-<rect x="1085.3" y="374.3" width="75.2" height="134.0" fill="#d9b40a" stroke="#ffffff" stroke-width="1"/>
-<text x="1122.9" y="443.6" font-size="6.8" fill="#241f00" text-anchor="middle">Tests codify bugs</text>
+<rect x="1085.3" y="374.3" width="75.2" height="134.0" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
+<text x="1122.9" y="443.3" font-size="5.8" fill="#ffffff" text-anchor="middle">Tests corrected (fi…</text>
 <rect x="1161.5" y="374.3" width="60.0" height="134.0" fill="#5b7c99" stroke="#ffffff" stroke-width="1"/>
 <text x="1191.5" y="443.3" font-size="5.8" fill="#ffffff" text-anchor="middle">Core port prese…</text>
 <text x="18" y="551.8149176930049" font-size="15.5" font-weight="bold" fill="#111">WebView2 integration</text>
@@ -120,7 +120,7 @@
 <rect x="969.0" y="705.2" width="125.7" height="97.5" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
 <text x="1031.9" y="757.0" font-size="8.8" fill="#ffffff" text-anchor="middle">Alarms persisted (fixed)</text>
 <rect x="1095.8" y="705.2" width="125.7" height="97.5" fill="#d9b40a" stroke="#ffffff" stroke-width="1"/>
-<text x="1158.6" y="756.3" font-size="6.8" fill="#241f00" text-anchor="middle">Find/print/PiP/passwords stubs</text>
+<text x="1158.6" y="756.8" font-size="8.4" fill="#241f00" text-anchor="middle">Print/PiP/passwords stubs</text>
 <text x="18" y="846.2052626734039" font-size="15.5" font-weight="bold" fill="#111">Performance (the lag)</text>
 <text x="215" y="845.2052626734039" font-size="11.5" fill="#777">render churn, memory, freezing</text>
 <text x="1222" y="845.2052626734039" font-size="11.5" font-weight="bold" fill="#666" text-anchor="end">88% fixed (7/8) · 1 minor</text>
@@ -206,5 +206,5 @@
 <text x="996.2" y="1456.4" font-size="10.0" fill="#ffffff" text-anchor="middle">7. Rename Search to AERIE</text>
 <rect x="1072.0" y="1408.5" width="149.5" height="89.0" fill="#37474f" stroke="#ffffff" stroke-width="1"/>
 <text x="1146.8" y="1457.1" font-size="12.0" fill="#ffffff" text-anchor="middle">8. Installer signing</text>
-<text x="620.0" y="1528" font-size="11" fill="#777" text-anchor="middle">audited by reading every source file, building, running 107 tests, and driving the app · 2026-11-22</text>
+<text x="620.0" y="1528" font-size="11" fill="#777" text-anchor="middle">audited by reading every source file, building, running 108 tests, and driving the app · 2026-11-22</text>
 </svg>

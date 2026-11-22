@@ -232,7 +232,7 @@ sealed partial class BrowserWindow
     {
         "t" => Key.T, "n" => Key.N, "l" => Key.L, "w" => Key.W, "k" => Key.K,
         "s" => Key.S, "r" => Key.R, "d" => Key.D, "h" => Key.H, "y" => Key.Y,
-        "c" => Key.C, "i" => Key.I, "p" => Key.P, "u" => Key.U,
+        "c" => Key.C, "i" => Key.I, "p" => Key.P, "u" => Key.U, "f" => Key.F,
         "," => Key.OemComma, "[" => Key.OemOpenBrackets, "]" => Key.OemCloseBrackets,
         "1" => Key.D1, "2" => Key.D2, "3" => Key.D3, "4" => Key.D4, "5" => Key.D5,
         "6" => Key.D6, "7" => Key.D7, "8" => Key.D8, "9" => Key.D9,

@@ -47,7 +47,8 @@ public sealed class History
     {
         if (!IsWeb(url)) return;
         var kept = Identity(url);
-        var found = Visits.FindIndex(v => v.Url == kept || Identity(v.Url) == kept);
+        // Every kept URL is already an identity; no URI parsing on the hot path.
+        var found = Visits.FindIndex(v => v.Url == kept);
         if (found >= 0)
         {
             var v = Visits[found];
@@ -67,12 +68,37 @@ public sealed class History
         if (string.IsNullOrWhiteSpace(title)) return;
         var kept = Identity(url);
         for (int i = Visits.Count - 1; i >= 0; i--)
-            if (Visits[i].Url == kept || Identity(Visits[i].Url) == kept)
+            if (Visits[i].Url == kept)
             {
-                Visits[i].Url = kept;
                 Visits[i].Title = title;
                 return;
             }
+    }
+
+    /// Brings an older file up to date once, at load: every URL in identity
+    /// form, and entries that differ only by fragment or credentials merged
+    /// into one (counts added, latest title and visit kept).
+    public void Normalize()
+    {
+        var byKey = new Dictionary<string, Visit>(StringComparer.Ordinal);
+        var result = new List<Visit>(Visits.Count);
+        foreach (var v in Visits)
+        {
+            var key = Identity(v.Url);
+            if (byKey.TryGetValue(key, out var existing))
+            {
+                existing.Count += v.Count;
+                if (v.Last > existing.Last) existing.Last = v.Last;
+                if (!string.IsNullOrWhiteSpace(v.Title)) existing.Title = v.Title;
+            }
+            else
+            {
+                v.Url = key;
+                byKey[key] = v;
+                result.Add(v);
+            }
+        }
+        Visits = result;
     }
 
     // ---------------------------------------------------------------- text

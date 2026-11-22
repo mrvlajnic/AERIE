@@ -160,9 +160,9 @@ public static class Dnr
             if (c == '*') sb.Append(".*");
             else if (c == '^')
             {
-                // The separator: anything but a letter, digit or _-.% — or the
-                // end. WebKit has no "or", so a trailing one is left open.
-                if (i == end - 1) break;
+                // A separator: anything but a letter, digit or _-.%. Every
+                // request URL has at least a path, so a trailing one keeps the
+                // separator too — "ads.example.com" must not match ".community".
                 sb.Append("[^a-zA-Z0-9_.%-]");
             }
             else if ("\\$.|?+()[]{}/".Contains(c)) sb.Append('\\').Append(c);

@@ -15,11 +15,18 @@ namespace Search;
 sealed partial class BrowserWindow : Window
 {
     public readonly Settings Settings = Store.Load<Settings>("settings.json");
-    public readonly History History = Store.Load<History>("history.json");
+    public readonly History History = LoadHistory();
     public readonly Hidden Hidden = Store.Load<Hidden>("hidden.json");
     public readonly List<Space> Spaces = new();
     public Space Space = null!;
     public bool Started { get; private set; }
+
+    static History LoadHistory()
+    {
+        var history = Store.Load<History>("history.json");
+        history.Normalize();
+        return history;
+    }
 
     readonly string[] startArgs;
     readonly Grid root = new();
