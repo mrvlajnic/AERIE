@@ -170,7 +170,7 @@
 <rect x="671.3" y="1146.0" width="144.1" height="89.6" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
 <text x="743.3" y="1193.8" font-size="8.8" fill="#ffffff" text-anchor="middle">Default branch main (fixed)</text>
 <rect x="816.3" y="1146.0" width="144.1" height="89.6" fill="#d9b40a" stroke="#ffffff" stroke-width="1"/>
-<text x="888.4" y="1194.8" font-size="12.0" fill="#241f00" text-anchor="middle">No installer/signing</text>
+<text x="888.4" y="1193.9" font-size="9.2" fill="#241f00" text-anchor="middle">Installer; signing pending</text>
 <rect x="961.4" y="1146.0" width="144.1" height="89.6" fill="#2e7d32" stroke="#ffffff" stroke-width="1"/>
 <text x="1033.4" y="1193.9" font-size="9.2" fill="#ffffff" text-anchor="middle">LGPL texts shipped (fixed)</text>
 <rect x="1106.5" y="1146.0" width="115.0" height="89.6" fill="#5b7c99" stroke="#ffffff" stroke-width="1"/>
