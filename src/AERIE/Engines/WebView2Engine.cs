@@ -36,7 +36,16 @@ sealed class WebView2Engine : IEngine
     {
         var args = new List<string>();
         if (perSite) args.Add("--process-per-site");
-        if (lean) args.Add("--enable-low-end-device-mode");
+        if (lean)
+        {
+            // Not Chromium's --enable-low-end-device-mode: on Windows it drops
+            // the compositor to 4-bit colour on some GPUs, which posterises
+            // every photo and bands every gradient. Lean mode saves memory
+            // without changing how a page looks.
+            args.Add("--js-flags=--max-old-space-size=256");
+            args.Add("--disk-cache-size=52428800");
+            args.Add("--disable-gpu-shader-disk-cache");
+        }
         return string.Join(" ", args);
     }
 

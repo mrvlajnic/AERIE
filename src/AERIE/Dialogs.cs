@@ -167,7 +167,7 @@ sealed class SettingsWindow : Plain
         Choice("Unused tabs sleep after", new[] { ("0", "Never"), ("5", "5 min"), ("10", "10 min"), ("30", "30 min"), ("60", "1 hour"), ("240", "4 hours") },
             S.SleepMinutes.ToString(), v => { S.SleepMinutes = int.Parse(v); browser.ApplySettings(); });
         Add(SiteCard.Toggle("Lean engine — smaller caches, as on a low-memory PC (after a restart)", S.Lean, true, on => { S.Lean = on; browser.ApplySettings(); }));
-        Note("Lean mode can make some gradients look slightly banded. Turn it off if a site looks wrong.");
+        Note("Lean mode caps the disk cache and the JavaScript heap. Heavy pages may be slower, but pages look the same.");
         Add(SiteCard.Toggle("Share one process between pages of the same site — less memory, weaker isolation (after a restart)", S.ProcessPerSite, true, on => { S.ProcessPerSite = on; browser.ApplySettings(); }));
 
         if (WebKit.Available)

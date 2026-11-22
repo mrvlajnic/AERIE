@@ -91,8 +91,10 @@ Fixed in this batch, each verified against the running build:
   the walls between them. The Settings toggle (`processPerSite`) opts in.
 - **Pop-ups** — a window a page opens without a click is refused and reported;
   a clicked one becomes a tab.
-- **Lean mode** — now opt-in (`lean`): the default keeps GPU rasterization, so
-  the low-memory mode can no longer be the cause of a stutter.
+- **Lean mode** — opt-in (`lean`): a smaller disk cache, a capped JavaScript
+  heap and no GPU shader cache. It no longer uses Chromium's
+  `--enable-low-end-device-mode`, which on some Windows GPUs dropped the
+  compositor to 4-bit colour and posterised every photo.
 - **WebKit extensions** — `permissions` answers from the manifest instead of
   "yes" to everything, and alarms persist to `alarms.json` and re-arm after a
   restart.
